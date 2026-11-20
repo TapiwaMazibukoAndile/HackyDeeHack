@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bonga: grocery app concept with in-store finder and step tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --brand:#8A1C4A;--brand-2:#B0275F;--brand-ink:#FFFFFF;--brand-soft:#F6E4EC;
+  --bg:#F7F3F5;--panel:#FFFFFF;--ink:#1E1A1C;--muted:#6B6268;--line:#E7DFE3;
+  --tag:#FFC928;--tag-ink:#1E1A1C;--route:#1D5BD6;--done:#B3AAAF;--ok:#1F7A4D;
+  --floor:#ECE8EA;--gondola:#4A3B43;--divider:#ECE8EA;--wall:#9C9298;
+  --produce:#A9D08F;--dairy:#BBD8EC;--butchery:#E9B6A6;--bakery:#EBD29E;--frozen:#A4CBE8;--till:#CBC3B3;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:#E9E1E5;color:var(--ink);font:15px/1.45 "Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:40px;padding:20px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--route);outline-offset:2px}
+
+/* desktop pitch caption beside the phone */
+.pitch{max-width:300px}
+.pitch .kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+.pitch h1{font-size:34px;line-height:1.05;font-weight:800;font-stretch:75%;margin:6px 0 12px}
+.pitch p{color:var(--muted);margin:0 0 12px}
+.pitch ol{padding-left:18px;margin:0 0 14px;color:var(--ink)}
+.pitch ol li{margin:4px 0}
+.pitch .fine{font-size:12px;color:var(--muted)}
+
+/* phone */
+.phone{position:relative;width:390px;height:min(844px,calc(100vh - 40px));background:var(--bg);border:10px solid #141113;border-radius:46px;
+  overflow:hidden;box-shadow:0 30px 80px rgba(40,10,25,.25);display:flex;flex-direction:column;flex:none}
+@media (max-width:760px){
+  body{padding:0;display:block;background:var(--bg)}
+  .pitch{display:none}
+  .phone{width:100%;height:100vh;height:100dvh;border:0;border-radius:0;box-shadow:none;
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+}
+.views{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.view[hidden]{display:none}
+
+/* bottom nav */
+.nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--panel);border-top:1px solid var(--line);flex:none}
+.nav button{border:0;background:none;padding:8px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);position:relative}
+.nav button svg{width:24px;height:24px}
+.nav button[aria-current="page"]{color:var(--brand)}
+.nav .badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--brand);color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:grid;place-items:center;padding:0 4px}
+.nav .badge[hidden]{display:none}
+
+/* header */
+.hdr{background:var(--brand);color:var(--brand-ink);padding:16px 16px 14px}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.logo{font-weight:800;font-size:26px;font-stretch:70%;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+.logo i{font-style:normal;background:var(--tag);color:var(--tag-ink);border-radius:6px;font-size:13px;padding:2px 6px;font-stretch:85%}
+.addr{font-size:13px;opacity:.9;text-align:right;line-height:1.25}
+.addr b{display:block;font-size:14px;opacity:1}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:rgba(0,0,0,.22);border-radius:10px;padding:3px;margin-top:12px}
+.seg button{border:0;background:none;color:var(--brand-ink);font-weight:700;padding:8px 6px;border-radius:8px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--brand)}
+.searchpill{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;background:var(--panel);color:var(--muted);border:0;border-radius:10px;padding:11px 12px;text-align:left}
+
+.sec{padding:16px 16px 4px}
+.sec h2{font-size:19px;font-weight:800;font-stretch:80%;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.sec h2 button{border:0;background:none;color:var(--brand);font-size:13px;font-weight:700;font-stretch:100%}
+
+.promo{margin:14px 16px 0;background:var(--ink);color:#fff;border-radius:14px;padding:16px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;overflow:hidden;position:relative}
+.promo .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--tag)}
+.promo h3{margin:3px 0 6px;font-size:20px;line-height:1.1;font-weight:800;font-stretch:78%}
+.promo p{margin:0 0 10px;font-size:13px;opacity:.85}
+.promo .art{font-size:46px;line-height:1}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 14px;font-weight:700}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.tag{background:var(--tag);border-color:var(--tag);color:var(--tag-ink)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:600;text-align:center;line-height:1.15}
+.cat span.e{width:100%;aspect-ratio:1;border-radius:14px;display:grid;place-items:center;font-size:30px}
+
+.rail{display:flex;gap:10px;overflow-x:auto;padding:0 16px 8px;margin:0 -16px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail .pcard{flex:0 0 136px;scroll-snap-align:start}
+.rail::before,.rail::after{content:"";flex:0 0 6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.pcard{background:var(--panel);border-radius:12px;padding:8px 8px 10px;position:relative;display:flex;flex-direction:column;border:1px solid var(--line);cursor:pointer}
+.thumb{aspect-ratio:1.1;border-radius:9px;display:grid;place-items:center;font-size:44px;position:relative}
+.deal{position:absolute;left:6px;top:6px;background:var(--brand);color:#fff;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:5px}
+.pname{font-size:13px;line-height:1.25;margin:7px 0 4px;font-weight:600;min-height:2.5em}
+.pprice{font-weight:800;font-stretch:80%;font-size:17px;margin-top:auto}
+.pprice s{color:var(--muted);font-weight:500;font-size:12px;margin-left:4px}
+.ctl{position:absolute;right:8px;top:calc(8px + (100% - 16px) * 0)}
+.pcard .ctl{top:auto;right:8px;bottom:9px;position:absolute}
+.add{width:32px;height:32px;border-radius:50%;border:0;background:var(--brand);color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;padding:0}
+.step{display:flex;align-items:center;background:var(--brand);color:#fff;border-radius:16px;height:32px}
+.step button{border:0;background:none;color:#fff;width:30px;height:32px;font-size:18px;padding:0;line-height:1}
+.step b{min-width:16px;text-align:center;font-size:14px}
+
+/* search view */
+.topbar{position:sticky;top:0;z-index:4;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 16px}
+.topbar h1{font-size:22px;font-weight:800;font-stretch:78%;margin:0 0 8px}
+.field{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:10px;background:var(--bg);font-size:16px}
+.field:focus{border-color:var(--route);outline:none}
+.chiprow{display:flex;gap:6px;overflow-x:auto;margin-top:10px;scrollbar-width:none}
+.chiprow::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.muted{color:var(--muted)}
+.emptybox{padding:40px 24px;text-align:center;color:var(--muted)}
+.emptybox .big{font-size:48px}
+.emptybox h2{color:var(--ink);font-size:20px;font-weight:800;font-stretch:80%;margin:8px 0 4px}
+
+/* cart */
+.crow{display:grid;grid-template-columns:48px 1fr auto;gap:4px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.crow .ce{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:26px;grid-row:span 2}
+.crow .cn{font-weight:600;font-size:14px;line-height:1.25}
+.crow .cp{font-size:13px;color:var(--muted)}
+.crow .cp s{margin-left:4px}
+.crow .ctl{position:static;grid-row:span 2}
+.sum{background:var(--panel);border-radius:12px;padding:12px 14px;margin:14px 0;border:1px solid var(--line)}
+.sum div{display:flex;justify-content:space-between;padding:3px 0}
+.sum .tot{font-weight:800;font-size:17px;border-top:1px solid var(--line);margin-top:6px;padding-top:9px}
+.bridge{border:2px dashed var(--brand);border-radius:12px;padding:14px;margin:0 0 14px;background:var(--brand-soft)}
+.bridge strong{display:block;font-size:16px}
+.bridge p{margin:4px 0 10px;font-size:13.5px;color:var(--ink)}
+
+/* bottom sheet */
+.sheet-wrap{position:absolute;inset:0;z-index:30;background:rgba(20,8,14,.45);display:flex;align-items:flex-end}
+.sheet-wrap[hidden]{display:none}
+.sheet{background:var(--panel);width:100%;border-radius:20px 20px 0 0;padding:10px 18px 22px;max-height:88%;overflow:auto;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
+.sheet .bigthumb{height:150px;border-radius:14px;display:grid;place-items:center;font-size:84px}
+.sheet h2{margin:12px 0 2px;font-size:22px;font-weight:800;font-stretch:80%;line-height:1.15}
+.sheet .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 14px}
+.sheet .ctl{position:static}
+.sheet .bigprice{font-weight:800;font-stretch:70%;font-size:34px}
+.sheet .bigprice s{font-size:15px;color:var(--muted);font-weight:500;margin-left:6px}
+.mini-tag{background:var(--tag);color:var(--tag-ink);border-radius:8px;padding:10px 12px;display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.mini-tag .ab{background:var(--tag-ink);color:var(--tag);border-radius:4px;min-width:50px;padding:4px 6px;text-align:center;line-height:1}
+.mini-tag .ab small{display:block;font-size:10px;font-weight:600;margin-bottom:2px}
+.mini-tag .ab b{font-size:24px;font-weight:800;font-stretch:70%}
+.mini-tag .ab b.word{font-size:12px;display:block;padding:3px 0}
+.mini-tag div.t{font-size:13.5px;line-height:1.3}
+.mini-tag div.t strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+
+.toast{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 15px;border-radius:8px;font-weight:600;font-size:14px;
+  opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+
+/* ---------- in-store (AisleFinder) ---------- */
+.ishdr{background:var(--ink);color:#fff;padding:14px 16px 12px}
+.ishdr .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ishdr .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--tag)}
+.ishdr h1{margin:1px 0 0;font-size:21px;font-weight:800;font-stretch:76%}
+.ishdr .chg{border:1px solid rgba(255,255,255,.35);background:none;color:#fff;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600}
+.af-search{position:relative;margin-top:10px}
+.af-search input{width:100%;padding:11px 12px;border:0;border-radius:10px;background:#fff;color:var(--ink);font-size:16px}
+.results{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:10px;list-style:none;margin:0;padding:6px;box-shadow:0 10px 30px rgba(30,10,20,.25);max-height:300px;overflow:auto;z-index:10}
+.results[hidden]{display:none}
+.results button{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:7px}
+.results button:hover,.results button.active{background:var(--bg)}
+.results .r-place{color:var(--muted);font-size:13px}
+.results .r-price{grid-row:span 2;align-self:center;font-weight:700;font-stretch:80%}
+.results .empty{padding:10px;color:var(--muted)}
+.ischips{display:flex;gap:6px;overflow-x:auto;margin-top:10px;scrollbar-width:none}
+.ischips::-webkit-scrollbar{display:none}
+.ischips button{flex:none;border:1px solid rgba(255,255,255,.35);background:none;color:#fff;border-radius:999px;padding:4px 11px;font-size:13px}
+
+.mapsticky{position:sticky;top:0;z-index:3;background:var(--bg);padding:10px 12px 6px;box-shadow:0 6px 10px -8px rgba(30,10,20,.25)}
+.mapcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px}
+.mapcard svg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:manipulation}
+.map-bar{display:flex;align-items:center;gap:8px;padding:2px 2px 8px}
+.map-note{color:var(--muted);font-size:12.5px;margin:0;flex:1;line-height:1.3}
+.map-note b{color:var(--ink)}
+.scan-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;font-size:13px;flex:none;white-space:nowrap}
+
+.panel{padding:0 16px 24px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 -16px 14px;padding:0 16px}
+.tabs button{border:0;background:none;padding:12px 4px;margin-right:14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+.tag{background:var(--tag);color:var(--tag-ink);border-radius:6px;padding:14px 16px 12px;position:relative;margin-bottom:14px}
+.tag::before{content:"";position:absolute;left:-1px;top:50%;width:10px;height:20px;margin-top:-10px;background:var(--bg);border-radius:0 10px 10px 0}
+.tag-top{display:flex;gap:12px;align-items:flex-start}
+.aisle-box{background:var(--tag-ink);color:var(--tag);border-radius:4px;min-width:54px;padding:5px 7px 6px;text-align:center;line-height:1}
+.aisle-box small{display:block;font-size:11px;font-weight:600;margin-bottom:3px}
+.aisle-box b{display:block;font-size:30px;font-weight:800;font-stretch:70%}
+.aisle-box b.word{font-size:14px;padding:4px 0 2px}
+.tag-name{font-weight:700;font-size:17px;line-height:1.25}
+.tag-place{font-size:14px;margin-top:2px}
+.tag-bottom{display:flex;align-items:flex-end;justify-content:space-between;margin-top:10px;gap:10px}
+.price{font-weight:800;font-stretch:68%;font-size:42px;line-height:.9;letter-spacing:-.01em}
+.price sup{font-size:20px;vertical-align:top;position:relative;top:4px}
+.price .r{font-size:22px;margin-right:2px}
+.tag .btn{background:var(--tag-ink);color:var(--tag);border:0}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.summary{color:var(--muted);margin:0}
+
+.leg h3{font-size:14px;margin:18px 0 6px;display:flex;gap:8px;align-items:center}
+.leg h3 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;flex:none}
+.leg.found h3{color:var(--muted)}
+.leg.found h3 .n{background:var(--done)}
+ol.steps{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);margin-left:10px}
+ol.steps li{padding:6px 0 6px 16px;position:relative;scroll-margin-top:330px;scroll-margin-bottom:20px}
+ol.steps li::before{content:"";position:absolute;left:-6px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--line)}
+ol.steps li.arrive{font-weight:600}
+ol.steps li.past{color:var(--muted)}
+ol.steps li.past::before{background:var(--done);border-color:var(--done)}
+ol.steps li.current::before{background:var(--route);border-color:var(--route)}
+ol.steps li.current{color:var(--ink);font-weight:700}
+.done-card{border:2px solid var(--ok);border-radius:8px;padding:14px 16px;margin-bottom:14px;background:var(--panel)}
+.done-card strong{display:block;font-size:17px}
+.callout{border:1.5px dashed var(--muted);border-radius:8px;padding:12px 14px;margin:0 0 14px;display:flex;gap:10px 14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.callout p{margin:0;font-size:14px;flex:1 1 180px}
+
+.empty-state h2{font-size:20px;font-stretch:80%;font-weight:800;margin:4px 0 6px}
+.empty-state p{color:var(--muted);margin:0 0 14px}
+.guide{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.guide li{display:flex;gap:10px;align-items:center;padding:3px 0;font-size:14px}
+.guide .num{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:4px;background:var(--gondola);color:#fff;font-weight:800;font-stretch:75%}
+.guide .dept{min-width:26px;height:26px;border-radius:4px}
+
+.list{list-style:none;margin:0 0 12px;padding:0}
+.list li{display:grid;grid-template-columns:1fr auto auto;gap:2px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.list .l-place{grid-column:1;color:var(--muted);font-size:13px}
+.list .l-price{grid-row:1/span 2;grid-column:2;font-weight:700;font-stretch:80%}
+.list .rm{grid-row:1/span 2;grid-column:3;border:0;background:none;font-size:20px;line-height:1;padding:4px 8px;color:var(--muted)}
+.total{display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px}
+
+.stores{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.stores button{width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.stores b{font-size:16px}
+.stores .sa{color:var(--muted);font-size:13px}
+.stores .km{grid-row:span 2;font-weight:700;font-size:13px;color:var(--brand)}
+
+/* map styling */
+.floor{fill:var(--floor)}
+.c-wall{fill:var(--wall)} .c-gondola{fill:var(--gondola)} .c-produce{fill:var(--produce)} .c-dairy{fill:var(--dairy)}
+.c-butchery{fill:var(--butchery)} .c-bakery{fill:var(--bakery)} .c-frozen{fill:var(--frozen)} .c-till{fill:var(--till)}
+.divider{stroke:var(--divider);stroke-width:1.5}
+.dlabel{fill:var(--ink);font-size:11px;font-weight:700;opacity:.8;text-anchor:middle}
+.wlabel{fill:#fff;font-size:10px;font-weight:700}
+.door{fill:var(--tag)}
+.sign rect{fill:var(--ink)} .sign text{fill:#fff;font-size:12px;font-weight:800;text-anchor:middle;font-stretch:75%}
+.route{fill:none;stroke:var(--route);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.route.route-done{stroke:var(--done);stroke-width:4}
+.stop{fill:var(--tag);stroke:var(--tag-ink);stroke-width:1.5}
+.stop.picked{fill:var(--done);stroke:none}
+.stop.next{stroke-width:2.5;animation:blink .8s steps(1,end) infinite}
+@keyframes blink{50%{fill:var(--tag-ink);stroke:var(--tag)}}
+.ping{fill:none;stroke:var(--tag);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{transform:scale(.5);opacity:1}100%{transform:scale(2.4);opacity:0}}
+.badge circle{fill:var(--ink)} .badge text{fill:#fff;font-size:10px;font-weight:800;text-anchor:middle}
+.badge.picked circle{fill:var(--done)}
+.you{fill:var(--route);stroke:#fff;stroke-width:2.5}
+.you-pulse{fill:var(--route);opacity:.35;transform-box:fill-box;transform-origin:center;animation:ping 2s ease-out infinite}
+.spot-mark .o{fill:var(--ink)} .spot-mark .i{fill:#fff}
+.scanned{fill:none;stroke:var(--route);stroke-width:2.5}
+
+/* scanner sheet */
+.viewfinder{position:relative;aspect-ratio:1;background:#0E1511;border-radius:12px;overflow:hidden;margin-bottom:6px}
+.viewfinder[hidden]{display:none}
+.viewfinder video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.viewfinder .frame{position:absolute;inset:15%;border:3px solid var(--tag);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.32)}
+.viewfinder .scanline{position:absolute;left:17%;right:17%;height:2px;background:var(--tag);top:17%;box-shadow:0 0 8px var(--tag);animation:sweep 1.6s ease-in-out infinite alternate}
+@keyframes sweep{to{top:83%}}
+.scan-alt [hidden]{display:none}
+
+.scan-status{margin:4px 0 14px}
+.scan-alt{display:grid;gap:8px}
+.scan-alt label{font-size:14px;color:var(--muted);margin-top:6px}
+.scan-alt select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:16px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* live step tracking */
+.scan-btn.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.live{margin-top:6px;border-top:1px solid var(--line);padding-top:8px}
+.live[hidden]{display:none}
+.live-row{display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.25}
+.live-row .stats{color:var(--muted);flex:1;min-width:0}
+.live-row .btn{padding:6px 10px;font-size:13px}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none;animation:livedot 1.2s steps(1,end) infinite}
+@keyframes livedot{50%{opacity:.3}}
+.pad{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:6px;margin-top:8px}
+.pad[hidden]{display:none}
+.pad .btn{min-height:44px;padding:8px 6px;font-size:14px}
+.live-note{margin:6px 0 0;font-size:12.5px;color:var(--muted);line-height:1.3}
+.beam{fill:var(--route);opacity:.22}
+.howto{margin:10px 0 14px;padding-left:20px}
+.howto li{margin:5px 0}
+.tune{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+.tune label{display:grid;gap:4px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.tune select{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:15px;color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){
+  .live-dot{animation:none}
+  .stop.next{animation:none;stroke-width:4}
+  .ping,.you-pulse{animation:none;opacity:0}
+  .sheet{animation:none}
+  .viewfinder .scanline{animation:none;display:none}
+}
+</style>
+</head>
+<body>
+
+<aside class="pitch">
+  <div class="kicker">HackyDeeHack concept</div>
+  <h1>One grocery app. Delivery, or a faster walk through the store.</h1>
+  <p>A mock 60-minute delivery app with an <b>In store</b> mode built from AisleFinder.</p>
+  <ol>
+    <li>Add a few things to your cart.</li>
+    <li>In the cart, choose <b>Plan my route</b>.</li>
+    <li>Pick a store, then tap <b>Track my steps</b> on a phone, or <b>Simulate walking</b>.</li>
+  </ol>
+  <p class="fine">“Bonga” is a made-up brand for this prototype. Prices and stores are sample data; every store uses the same demo floor plan, and no orders are placed.</p>
+</aside>
+
+<div class="phone" id="phone">
+  <div class="views">
+    <section class="view" id="v-home" aria-label="Home"></section>
+    <section class="view" id="v-search" aria-label="Search" hidden></section>
+    <section class="view" id="v-instore" aria-label="In store" hidden></section>
+    <section class="view" id="v-cart" aria-label="Cart" hidden></section>
+  </div>
+  <nav class="nav" aria-label="Main">
+    <button data-nav="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+    <button data-nav="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search</button>
+    <button data-nav="instore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>In store</button>
+    <button data-nav="cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 8H6.2"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Cart<span class="badge" id="cartbadge" hidden>0</span></button>
+  </nav>
+
+  <div class="sheet-wrap" id="sheet" hidden><div class="sheet" role="dialog" aria-modal="true" id="sheetbody"></div></div>
+  <input class="sr-only" id="scan-photo" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rand=p=>`R${p.toFixed(2)}`;
+let toastT;function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1900);}
+
+/* =====================================================================
+   STORE FLOOR PLAN + ROUTING (ported from AisleFinder)
+   ===================================================================== */
+const W=32,H=22,C=20,M=1.5;
+const DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
+const grid=[...Array(H)].map(()=>Array(W).fill(null));
+function block(x0,y0,x1,y1,d){for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)grid[y][x]=d;}
+block(0,0,31,0,'wall');
+block(1,0,11,0,'dairy');block(12,0,20,0,'butchery');block(21,0,30,0,'bakery');
+block(0,1,0,16,'produce');[5,9,13].forEach(y=>block(2,y,3,y+1,'produce'));
+block(31,1,31,16,'frozen');
+const GONDOLAS=[7,11,15,19,23,27];
+GONDOLAS.forEach(x=>block(x,4,x+1,14,'gondola'));
+[8,11,14,17,20,23,26].forEach(x=>block(x,18,x,19,'till'));
+block(0,17,0,21,'wall');block(31,17,31,21,'wall');block(1,21,30,21,'wall');
+grid[21][2]=null;grid[21][3]=null;
+const ENTRANCE=[2,20];
+const AISLES=[
+  {n:1,x:[5,6],name:'Snacks & sweets'},
+  {n:2,x:[9,10],name:'Breakfast, tea & coffee'},
+  {n:3,x:[13,14],name:'Baking, tins & jars'},
+  {n:4,x:[17,18],name:'Rice, pasta, maize meal & sauces'},
+  {n:5,x:[21,22],name:'Cleaning & toiletries'},
+  {n:6,x:[25,26],name:'Baby & pets'},
+  {n:7,x:[29,30],name:'Cold drinks & frozen'}
+];
+const SPOTS=[
+  {id:'entrance',name:'Entrance',sub:'Main doors',x:2,y:20,face:0},
+  ...AISLES.flatMap(a=>[
+    {id:`a${a.n}-front`,name:`Aisle ${a.n}`,sub:'Front end',x:a.x[0],y:16,face:0,sx:(a.x[0]+1)*C,sy:15.5*C},
+    {id:`a${a.n}-back`,name:`Aisle ${a.n}`,sub:'Back end',x:a.x[0],y:1,face:2,sx:(a.x[0]+1)*C,sy:2.5*C}]),
+  {id:'produce',name:'Fresh produce',sub:'Produce bins',x:1,y:8,face:3},
+  {id:'dairy',name:'Dairy',sub:'Dairy fridges',x:3,y:1,face:0},
+  {id:'butchery',name:'Butchery',sub:'Butchery counter',x:13,y:1,face:0},
+  {id:'bakery',name:'Bakery',sub:'Bread racks',x:23,y:1,face:0},
+  {id:'tills',name:'Tills',sub:'Checkout',x:16,y:17,face:2}
+];
+SPOTS.forEach(s=>{if(s.sx==null){s.sx=s.x*C+C/2+DIRS[s.face][0]*C*.75;s.sy=s.y*C+C/2+DIRS[s.face][1]*C*.75;s.mark=true;}});
+const COLCAT={7:'Snacks & sweets',8:'Breakfast cereals',11:'Tea & coffee',12:'Baking',15:'Tins & jars',16:'Rice, pasta & maize meal',
+  19:'Sauces & spices',20:'Cleaning',23:'Toiletries',24:'Baby',27:'Pets',28:'Cold drinks & water',31:'Frozen'};
+const DEPT={dairy:'Dairy',butchery:'Butchery',bakery:'Bakery',produce:'Fresh produce'};
+
+// name, price, x, y, shelf level, emoji, was-price (optional special)
+const RAW=[
+ ['Salt & vinegar chips 125g',21.99,7,5,'eye level','🥔',26.99],['Milk chocolate slab 80g',24.99,7,8,'eye level','🍫'],['Beef biltong 100g',64.99,7,11,'top shelf','🥩',74.99],['Popcorn kernels 500g',29.99,7,13,'bottom shelf','🍿'],
+ ['Rolled oats 1kg',39.99,8,5,'eye level','🥣'],['Cornflakes 500g',44.99,8,8,'eye level','🥣'],['Buttermilk rusks 500g',59.99,8,11,'middle shelf','🍪',69.99],
+ ['Rooibos tea, 80 bags',44.99,11,6,'eye level','🍵'],['Instant coffee 200g',89.99,11,9,'top shelf','☕',109.99],['Hot chocolate 500g',54.99,11,12,'middle shelf','☕'],
+ ['Cake flour 2.5kg',42.99,12,5,'bottom shelf','🌾'],['White sugar 2kg',46.99,12,8,'bottom shelf','🧂'],['Baking powder 200g',24.99,12,11,'eye level','🧁'],
+ ['Baked beans 410g',17.99,15,6,'eye level','🥫'],['Chakalaka 410g',19.99,15,9,'eye level','🥫',22.99],['Pilchards in tomato sauce 400g',29.99,15,12,'middle shelf','🐟'],
+ ['Super maize meal 5kg',74.99,16,5,'bottom shelf','🌽',84.99],['Long grain rice 2kg',49.99,16,9,'middle shelf','🍚'],['Spaghetti 500g',19.99,16,12,'eye level','🍝'],
+ ['Fruit chutney 470g',36.99,19,6,'eye level','🫙'],['Peri-peri sauce 250ml',44.99,19,9,'eye level','🌶️'],['Braai spice 200ml',32.99,19,12,'top shelf','🧂'],
+ ['Dishwashing liquid 750ml',29.99,20,6,'eye level','🧽'],['Washing powder 2kg',89.99,20,10,'bottom shelf','🧺',99.99],['Bleach 1.5L',34.99,20,13,'bottom shelf','🧴'],
+ ['Toothpaste 100ml',27.99,23,6,'eye level','🪥'],['Bath soap, 3-pack',36.99,23,9,'middle shelf','🧼'],['Roll-on deodorant 50ml',32.99,23,12,'eye level','🧴'],
+ ['Nappies size 3, 46s',199.99,24,7,'bottom shelf','👶',229.99],['Baby wipes, 3-pack',64.99,24,11,'eye level','🧻'],
+ ['Dog food 8kg',249.99,27,7,'bottom shelf','🐕'],['Cat litter 5kg',79.99,27,11,'bottom shelf','🐈'],
+ ['Still water 5L',24.99,28,6,'bottom shelf','💧'],['Cola 2L',27.99,28,9,'eye level','🥤',32.99],['Orange juice 2L',39.99,28,12,'middle shelf','🧃'],
+ ['Frozen peas 1kg',44.99,31,5,'in the freezer','🫛'],['Vanilla ice cream 2L',54.99,31,9,'in the freezer','🍨',64.99],['Frozen oven chips 2kg',62.99,31,13,'in the freezer','🍟'],
+ ['Full cream milk 2L',36.99,3,0,'in the fridge','🥛'],['Amasi 2L',39.99,6,0,'in the fridge','🥛'],['Cheddar cheese 400g',79.99,9,0,'in the fridge','🧀',89.99],['Salted butter 500g',69.99,11,0,'in the fridge','🧈'],
+ ['Boerewors 1kg',109.99,14,0,'at the counter','🌭',124.99],['Chicken braai pack 1kg',99.99,17,0,'at the counter','🍗'],['Beef mince 500g',74.99,20,0,'at the counter','🥩'],
+ ['White bread loaf 700g',17.99,23,0,'on the bread racks','🍞'],['Vetkoek, 6-pack',29.99,26,0,'on the bread racks','🥯'],['Bread rolls, 6-pack',22.99,29,0,'on the bread racks','🥖'],
+ ['Bananas per kg',24.99,0,4,'in the produce bins','🍌'],['Tomatoes 1kg',29.99,0,8,'in the produce bins','🍅',34.99],['Potatoes 7kg',79.99,0,12,'in the produce bins','🥔'],
+ ['Apples 1.5kg',34.99,2,5,'on the display table','🍎'],['Avocados, 4-pack',39.99,3,9,'on the display table','🥑',49.99],['Onions 2kg',27.99,2,13,'on the display table','🧅']
+];
+
+const walk=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&grid[y][x]===null;
+const aisleAt=(x,y)=>(y<4||y>14)?null:(AISLES.find(a=>a.x.includes(x))||null);
+function accessOf(x,y){for(const[dx,dy]of DIRS)if(walk(x+dx,y+dy))return[x+dx,y+dy];return null;}
+
+// shop categories for the delivery side
+const CATS=[
+  {id:'produce',name:'Fresh produce',e:'🥬',bg:'#E3F1D9'},
+  {id:'meat',name:'Meat',e:'🥩',bg:'#F7DDD5'},
+  {id:'dairy',name:'Dairy',e:'🥛',bg:'#DDEBF5'},
+  {id:'bakery',name:'Bakery',e:'🍞',bg:'#F6EAD0'},
+  {id:'pantry',name:'Pantry',e:'🥫',bg:'#F3E1D3'},
+  {id:'breakfast',name:'Breakfast & tea',e:'☕',bg:'#EDE2D8'},
+  {id:'snacks',name:'Snacks',e:'🍫',bg:'#F4DDE6'},
+  {id:'drinks',name:'Drinks',e:'🥤',bg:'#DCEFF1'},
+  {id:'frozen',name:'Frozen',e:'🧊',bg:'#DCE9F7'},
+  {id:'household',name:'Household',e:'🧴',bg:'#E6E3F3'},
+  {id:'baby',name:'Baby & pets',e:'🍼',bg:'#F5E8DA'}
+];
+const CATBY=Object.fromEntries(CATS.map(c=>[c.id,c]));
+function shopCat(dept,x){
+  if(dept==='produce')return'produce';if(dept==='dairy')return'dairy';if(dept==='butchery')return'meat';if(dept==='bakery')return'bakery';if(dept==='frozen')return'frozen';
+  return {7:'snacks',8:'breakfast',11:'breakfast',12:'pantry',15:'pantry',16:'pantry',19:'pantry',20:'household',23:'household',24:'baby',27:'baby',28:'drinks'}[x]||'pantry';
+}
+
+const PRODUCTS=RAW.map(([name,price,x,y,lvl,emoji,was],id)=>{
+  const g=grid[y][x];let aisle=null,cat,place;
+  if(g==='gondola'||g==='frozen'){const a=accessOf(x,y);aisle=aisleAt(a[0],a[1]);cat=COLCAT[x];place=`Aisle ${aisle.n}`+(g==='frozen'?', freezers':'');}
+  else{cat=DEPT[g];place=g==='produce'?'Fresh produce':`${DEPT[g]}, back wall`;}
+  return{id,name,price,x,y,lvl,aisle,cat,place,dept:g,emoji,was:was||null,shop:shopCat(g,x)};
+});
+const byName=n=>PRODUCTS.find(p=>p.name===n);
+
+// Dijkstra over (cell, heading) so turns cost a little
+function hpush(h,v){h.push(v);let i=h.length-1;while(i>0){const p=(i-1)>>1;if(h[p][0]<=h[i][0])break;[h[p],h[i]]=[h[i],h[p]];i=p;}}
+function hpop(h){const t=h[0],l=h.pop();if(h.length){h[0]=l;let i=0;for(;;){const a=2*i+1,b=a+1;let m=i;if(a<h.length&&h[a][0]<h[m][0])m=a;if(b<h.length&&h[b][0]<h[m][0])m=b;if(m===i)break;[h[m],h[i]]=[h[i],h[m]];i=m;}}return t;}
+function dijkstra(sx,sy){
+  const N=W*H*4,dist=new Float64Array(N).fill(Infinity),prev=new Int32Array(N).fill(-1),h=[];
+  for(let d=0;d<4;d++){const s=(sy*W+sx)*4+d;dist[s]=0;hpush(h,[0,s]);}
+  while(h.length){
+    const[c,s]=hpop(h);if(c>dist[s])continue;
+    const cell=s>>2,d=s&3,x=cell%W,y=(cell/W)|0;
+    for(let nd=0;nd<4;nd++){
+      const nx=x+DIRS[nd][0],ny=y+DIRS[nd][1];if(!walk(nx,ny))continue;
+      const nc=c+1+(nd===d?0:0.35),ns=(ny*W+nx)*4+nd;
+      if(nc<dist[ns]){dist[ns]=nc;prev[ns]=s;hpush(h,[nc,ns]);}
+    }
+  }
+  return{dist,prev};
+}
+function legTo(D,it){
+  let best=null;const stands=[];
+  for(const[dx,dy]of DIRS){if(!walk(it.x+dx,it.y+dy))continue;stands.push([it.x+dx,it.y+dy]);if(walk(it.x+2*dx,it.y+2*dy))stands.push([it.x+2*dx,it.y+2*dy]);}
+  for(const[x,y]of stands){const cell=y*W+x;
+    for(let d=0;d<4;d++){const c=D.dist[cell*4+d];if(c<Infinity&&(!best||c<best.cost))best={cost:c,state:cell*4+d};}}
+  if(!best)return null;
+  const path=[];for(let s=best.state;s!==-1;s=D.prev[s]){const cell=s>>2;path.push([cell%W,(cell/W)|0]);}
+  return{cost:best.cost,path:path.reverse()};
+}
+function planRoute(start,items){
+  let cur=start,rest=[...items];const legs=[];
+  while(rest.length){
+    const D=dijkstra(cur[0],cur[1]);let best=null;
+    for(const it of rest){const r=legTo(D,it);if(r&&(!best||r.cost<best.cost))best={...r,item:it};}
+    if(!best)break;legs.push(best);cur=best.path[best.path.length-1];rest=rest.filter(i=>i!==best.item);
+  }
+  return legs;
+}
+const COMPASS=['toward the back of the store','right, toward the freezers','toward the front of the store','left, toward Fresh produce'];
+const dirOf=(a,b)=>DIRS.findIndex(([dx,dy])=>a[0]+dx===b[0]&&a[1]+dy===b[1]);
+function turnOf(a,b){const c=DIRS[a][0]*DIRS[b][1]-DIRS[a][1]*DIRS[b][0];return c>0?'right':c<0?'left':'around';}
+function corridor(s){if(s.d%2===0)return'';const y=s.end[1];return y<=3?'along the back of the store':y>=15?'along the front of the store':'';}
+function arrival(it,cell,d){
+  if(d===null)return`You’re right there. ${it.name} is ${it.lvl}.`;
+  const ox=it.x-cell[0],oy=it.y-cell[1],rx=-DIRS[d][1],ry=DIRS[d][0];
+  const side=ox*rx+oy*ry,fwd=ox*DIRS[d][0]+oy*DIRS[d][1];
+  const where=side>0?'on your right':side<0?'on your left':fwd>0?'straight ahead':'behind you';
+  return`${it.name} is ${where}, ${it.lvl}.`;
+}
+function stepsFor(path,it,off,facing){
+  const segs=[];
+  for(let i=1;i<path.length;i++){const d=dirOf(path[i-1],path[i]),last=segs[segs.length-1];
+    if(last&&last.d===d){last.len++;last.end=path[i];}else segs.push({d,len:1,from:path[i-1],end:path[i],at:off+i-1,i0:i-1});}
+  const steps=segs.map((s,i)=>{
+    const m=Math.max(1,Math.round(s.len*M)),cells=path.slice(s.i0+1,s.i0+1+s.len);
+    const enter=aisleAt(...s.from)?null:(cells.map(c=>aisleAt(...c)).find(Boolean)||null);
+    const aisleBit=!enter?'':aisleAt(...s.end)?`into Aisle ${enter.n}`:`through Aisle ${enter.n}${s.end[1]<=3?' to the back of the store':s.end[1]>=15?' to the front of the store':''}`;
+    const prev=i===0?facing:segs[i-1].d;let t;
+    if(prev==null)t=aisleBit?`Walk ${aisleBit}`:`Head ${COMPASS[s.d]}`;
+    else if(prev===s.d)t=aisleBit?`Walk straight ahead ${aisleBit}`:'Walk straight ahead';
+    else{const tr=turnOf(prev,s.d),turn=tr==='around'?'Turn around':`Turn ${tr}`,c=corridor(s);
+      t=aisleBit?(aisleBit.startsWith('into')?`${turn} ${aisleBit}`:`${turn} and walk ${aisleBit}`):c?`${turn} and walk ${c}`:turn;}
+    return{text:`${t}, about ${m} m`,at:s.at};
+  });
+  steps.push({text:arrival(it,path[path.length-1],segs.length?segs[segs.length-1].d:(facing==null?null:facing)),at:off+path.length-1,arrive:true});
+  return steps;
+}
+function describe([x,y]){const a=aisleAt(x,y);if(a)return`Aisle ${a.n}`;if(y<=3)return'the back of the store';if(y>=17&&x<8)return'the entrance';if(y>=17)return'the tills';if(x<=4)return'Fresh produce';return'the front of the store';}
+
+/* =====================================================================
+   APP STATE
+   ===================================================================== */
+const STORES=[
+  {id:'rosebank',name:'Bonga Rosebank',area:'Rosebank, Johannesburg',km:'1.2 km'},
+  {id:'braam',name:'Bonga Braamfontein',area:'Braamfontein, Johannesburg',km:'4.6 km'},
+  {id:'soweto',name:'Bonga Soweto',area:'Orlando West, Soweto',km:'18 km'},
+  {id:'menlyn',name:'Bonga Menlyn',area:'Menlyn, Pretoria',km:'52 km'}
+];
+const App={view:'home',cart:{},store:null,searchQ:'',searchCat:null};
+const S={user:ENTRANCE.slice(),list:[],routeItems:[],picked:new Set(),route:null,walkIdx:0,walking:false,pause:0,timer:null,tab:'dir',facing:0,located:null};
+const cartCount=()=>Object.values(App.cart).reduce((a,b)=>a+b,0);
+const cartItems=()=>Object.entries(App.cart).filter(([,q])=>q>0).map(([id,q])=>({p:PRODUCTS[+id],q}));
+
+/* ---------- shared bits ---------- */
+function ctlHTML(id){
+  const q=App.cart[id]||0;
+  if(!q)return`<button class="add" data-inc="${id}" aria-label="Add ${esc(PRODUCTS[id].name)} to cart">+</button>`;
+  return`<div class="step"><button data-dec="${id}" aria-label="One less">−</button><b>${q}</b><button data-inc="${id}" aria-label="One more">+</button></div>`;
+}
+function priceSmall(p){return`${rand(p.price)}${p.was?`<s>${rand(p.was)}</s>`:''}`;}
+function card(p){
+  return`<div class="pcard" data-open="${p.id}" role="button" tabindex="0" aria-label="${esc(p.name)}, ${rand(p.price)}">
+    <div class="thumb" style="background:${CATBY[p.shop].bg}">${p.emoji}${p.was?`<span class="deal">Save R${Math.round(p.was-p.price)}</span>`:''}</div>
+    <div class="pname">${esc(p.name)}</div><div class="pprice">${priceSmall(p)}</div>
+    <div class="ctl" data-ctl="${p.id}">${ctlHTML(p.id)}</div></div>`;
+}
+function refreshCtl(id){
+  document.querySelectorAll(`[data-ctl="${id}"]`).forEach(el=>el.innerHTML=ctlHTML(id));
+  const n=cartCount(),b=$('cartbadge');b.textContent=n;b.hidden=!n;
+  if(App.view==='cart')renderCart();
+}
+function changeQty(id,d){
+  const q=Math.max(0,(App.cart[id]||0)+d);
+  if(q)App.cart[id]=q;else delete App.cart[id];
+  if(d>0&&q===1)toast(`Added ${PRODUCTS[id].name}`);
+  refreshCtl(id);
+}
+
+/* ---------- navigation ---------- */
+function show(view){
+  if(view!=='instore'&&T.on)stopTracking();
+  App.view=view;
+  ['home','search','instore','cart'].forEach(v=>{$('v-'+v).hidden=v!==view;});
+  document.querySelectorAll('.nav button').forEach(b=>{if(b.dataset.nav===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  if(view==='home')renderHome();
+  if(view==='search')renderSearch();
+  if(view==='cart')renderCart();
+  if(view==='instore')renderInstore();
+}
+
+/* ---------- home ---------- */
+function rail(title,items){return`<div class="sec"><h2>${title}</h2><div class="rail">${items.map(card).join('')}</div></div>`;}
+function renderHome(){
+  const v=$('v-home'),keep=v.scrollTop;
+  const specials=PRODUCTS.filter(p=>p.was);
+  const braai=['Boerewors 1kg','Chicken braai pack 1kg','Braai spice 200ml','Peri-peri sauce 250ml','Bread rolls, 6-pack','Chakalaka 410g','Cola 2L','Onions 2kg'].map(byName);
+  const staples=['Super maize meal 5kg','Full cream milk 2L','White bread loaf 700g','Rooibos tea, 80 bags','Long grain rice 2kg','White sugar 2kg','Amasi 2L','Cake flour 2.5kg'].map(byName);
+  v.innerHTML=`
+  <div class="hdr">
+    <div class="hdr-top"><div class="logo">Bonga <i>60 min</i></div><div class="addr">Delivering to<b>Home · Rosebank</b></div></div>
+    <div class="seg" role="group" aria-label="Shopping mode"><button aria-pressed="true">Delivery</button><button aria-pressed="false" data-nav="instore">In store</button></div>
+    <button class="searchpill" data-nav="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search 50+ products</button>
+  </div>
+  <div class="promo">
+    <div><div class="k">New · In store mode</div><h3>At the shops? We’ll walk you to every item.</h3>
+    <p>Pick your store, bring your cart, and get the shortest route aisle by aisle.</p>
+    <button class="btn tag" data-nav="instore">Try it in store</button></div>
+    <div class="art" aria-hidden="true">🗺️</div>
+  </div>
+  <div class="sec"><h2>Shop by category</h2><div class="cats">${CATS.slice(0,8).map(c=>`<button class="cat" data-cat="${c.id}"><span class="e" style="background:${c.bg}">${c.e}</span>${c.name}</button>`).join('')}</div></div>
+  ${rail('This week’s specials',specials)}
+  ${rail('Braai essentials',braai)}
+  ${rail('Pantry staples',staples)}
+  <div style="height:16px"></div>`;
+  v.scrollTop=keep;
+}
+
+/* ---------- search ---------- */
+function searchResults(){
+  const terms=App.searchQ.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  return PRODUCTS.filter(p=>(!App.searchCat||p.shop===App.searchCat)&&terms.every(t=>`${p.name} ${p.cat} ${CATBY[p.shop].name}`.toLowerCase().includes(t)));
+}
+function renderSearchResults(){
+  const r=searchResults();
+  $('sres').innerHTML=r.length?`<div class="grid">${r.map(card).join('')}</div>`
+    :`<div class="emptybox"><div class="big">🔎</div><h2>Nothing found</h2>Try a shorter word, like “milk”.</div>`;
+}
+function renderSearch(){
+  const v=$('v-search');
+  v.innerHTML=`<div class="topbar"><h1>Search</h1>
+    <input class="field" id="sq" type="search" placeholder="Try “boerewors” or “rooibos”" value="${esc(App.searchQ)}" autocomplete="off" aria-label="Search products">
+    <div class="chiprow">${[{id:null,name:'All'},...CATS].map(c=>`<button class="chip" data-scat="${c.id||''}" aria-pressed="${App.searchCat===c.id}">${c.e?c.e+' ':''}${c.name}</button>`).join('')}</div></div>
+    <div class="sec" id="sres"></div>`;
+  renderSearchResults();
+  $('sq').addEventListener('input',e=>{App.searchQ=e.target.value;renderSearchResults();});
+}
+
+/* ---------- cart ---------- */
+function renderCart(){
+  const v=$('v-cart'),keep=v.scrollTop,items=cartItems();
+  if(!items.length){
+    v.innerHTML=`<div class="topbar"><h1>Your cart</h1></div><div class="emptybox"><div class="big">🛒</div><h2>Your cart is empty</h2><p>Add a few things, then get them delivered or find them in store.</p>
+    <button class="btn primary" id="samplecart">Fill with a sample shop</button></div>`;
+    return;
+  }
+  const sub=items.reduce((a,{p,q})=>a+p.price*q,0),save=items.reduce((a,{p,q})=>a+(p.was?(p.was-p.price)*q:0),0),fee=sub>=450?0:35;
+  v.innerHTML=`<div class="topbar"><h1>Your cart</h1><div class="muted" style="font-size:13px">${cartCount()} item${cartCount()>1?'s':''} · delivered in about 60 min</div></div>
+  <div class="sec">
+    <div class="bridge"><strong>🗺️ Shopping in store instead?</strong><p>Turn this cart into a walking route: we put the stops in order so you cover the least ground.</p>
+      <button class="btn primary" id="cart2store">Plan my route in store</button></div>
+    ${items.map(({p})=>`<div class="crow"><span class="ce" style="background:${CATBY[p.shop].bg}">${p.emoji}</span>
+      <span class="cn">${esc(p.name)}</span><div class="ctl" data-ctl="${p.id}">${ctlHTML(p.id)}</div><span class="cp">${priceSmall(p)} · ${esc(p.place)}</span></div>`).join('')}
+    <div class="sum"><div><span>Subtotal</span><span>${rand(sub)}</span></div>
+      ${save?`<div style="color:var(--ok)"><span>You save</span><span>${rand(save)}</span></div>`:''}
+      <div><span>Delivery fee${fee?' <span class="muted">(free over R450)</span>':''}</span><span>${fee?rand(fee):'Free'}</span></div>
+      <div class="tot"><span>Total</span><span>${rand(sub+fee)}</span></div></div>
+    <button class="btn primary block" id="checkout">Checkout</button>
+    <div style="height:16px"></div></div>`;
+  v.scrollTop=keep;
+}
+
+/* ---------- product sheet ---------- */
+function aisleMini(it){
+  const box=it.aisle?`<div class="ab"><small>Aisle</small><b>${it.aisle.n}</b></div>`:`<div class="ab"><small>${it.dept==='produce'?'Section':'Back wall'}</small><b class="word">${esc(DEPT[it.dept])}</b></div>`;
+  return`<div class="mini-tag">${box}<div class="t"><strong>In store</strong>${esc(it.cat)}, ${esc(it.lvl)}</div></div>`;
+}
+function openSheet(html){if(Scan.stream)stopCamera();$('sheetbody').innerHTML=`<div class="grab"></div>`+html;$('sheet').hidden=false;}
+function closeSheet(){$('sheet').hidden=true;if(Scan.open){Scan.open=false;stopCamera();}}
+function openProduct(id){
+  const p=PRODUCTS[id];
+  openSheet(`<div class="bigthumb" style="background:${CATBY[p.shop].bg}">${p.emoji}</div>
+    <h2>${esc(p.name)}</h2><div class="muted">${esc(CATBY[p.shop].name)}</div>
+    <div class="row"><div class="bigprice">${rand(p.price)}${p.was?`<s>${rand(p.was)}</s>`:''}</div><div class="ctl" data-ctl="${p.id}">${ctlHTML(p.id)}</div></div>
+    ${aisleMini(p)}
+    <button class="btn block" data-findit="${p.id}">Show me where it is in store</button>`);
+}
+
+/* =====================================================================
+   IN-STORE MODE (AisleFinder)
+   ===================================================================== */
+let instoreBuilt=false;
+function renderInstore(){
+  const v=$('v-instore');
+  if(!App.store){
+    instoreBuilt=false;
+    v.innerHTML=`<div class="ishdr"><div class="k">In store mode</div><h1>Which store are you in?</h1></div>
+      <div class="sec"><ul class="stores">${STORES.map(s=>`<li><button data-store="${s.id}"><b>${esc(s.name)}</b><span class="km">${s.km}</span><span class="sa">${esc(s.area)}</span></button></li>`).join('')}</ul>
+      <p class="muted" style="font-size:13px;margin-top:14px">Prototype: every store uses the same demo floor plan.</p>
+      <button class="btn block" data-nav="home" style="margin-top:6px">Back to delivery</button></div>`;
+    return;
+  }
+  if(!instoreBuilt){
+    instoreBuilt=true;
+    v.innerHTML=`<div class="ishdr">
+      <div class="top"><div><div class="k">In store mode</div><h1 id="af-store"></h1></div><button class="chg" id="af-change">Change store</button></div>
+      <div class="af-search" role="search"><input id="af-q" type="search" autocomplete="off" placeholder="Where’s the… “amasi”" aria-label="Find a product in this store" aria-controls="af-results" aria-autocomplete="list"><ul class="results" id="af-results" role="listbox" hidden></ul></div>
+      <div class="ischips" id="af-chips"></div></div>
+    <div class="mapsticky"><div class="mapcard">
+      <div class="map-bar"><button class="btn primary scan-btn" id="af-scanbtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20v.01M17 20h3v-3"/></svg>Scan sign</button><button class="btn scan-btn" id="af-trackbtn" type="button" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg>Track</button><p class="map-note" id="af-note"></p></div>
+      <div id="af-mapwrap" tabindex="0" aria-label="Store map. Tap open floor to set your position, or use the arrow keys to move.">
+        <svg id="af-map" viewBox="0 0 640 440" role="img" aria-label="Store floor plan"><g id="af-static"></g><g id="af-dyn"></g></svg></div>
+      <div class="live" id="af-live" hidden>
+        <div class="live-row"><span class="live-dot" aria-hidden="true"></span><b id="lv-mode">Tracking</b><span class="stats" id="lv-stats"></span><button class="btn" id="lv-stop" type="button">Stop</button></div>
+        <div class="pad" id="lv-pad" hidden><button class="btn" id="lv-left" type="button" aria-label="Turn left 45 degrees">↺ Left</button><button class="btn primary" id="lv-step" type="button">Take a step</button><button class="btn" id="lv-right" type="button" aria-label="Turn right 45 degrees">Right ↻</button></div>
+        <p class="live-note" id="lv-note" role="status"></p>
+      </div>
+    </div></div>
+    <section class="panel" id="af-panel" aria-live="polite"></section>`;
+    wireInstore();drawStatic();
+  }
+  $('af-store').textContent=STORES.find(s=>s.id===App.store).name;
+  render();
+}
+function chooseStore(id){App.store=id;show('instore');toast(`You’re shopping at ${STORES.find(s=>s.id===id).name}`);}
+
+function buildRoute(){
+  const remaining=S.routeItems.filter(i=>!S.picked.has(i.id));
+  if(!S.routeItems.length){S.route=null;return;}
+  const legs=planRoute(S.user,remaining),full=[S.user.slice()];
+  legs.forEach((L,k)=>{const off=full.length-1;L.path.slice(1).forEach(p=>full.push(p));L.end=full.length-1;L.steps=stepsFor(L.path,L.item,off,k===0?S.facing:null);});
+  const found=S.routeItems.filter(i=>S.picked.has(i.id)).map(item=>({item,end:-1,steps:[],found:true}));
+  S.route={legs,found,full};S.walkIdx=0;
+}
+const currentLeg=()=>S.route?S.route.legs.find(L=>!S.picked.has(L.item.id)):null;
+
+function drawStatic(){
+  let s=`<rect class="floor" x="0" y="0" width="${W*C}" height="${H*C}"/>`;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const g=grid[y][x];if(g)s+=`<rect class="c-${g}" x="${x*C}" y="${y*C}" width="${C+.5}" height="${C+.5}"/>`;}
+  GONDOLAS.forEach(gx=>{s+=`<line class="divider" x1="${(gx+1)*C}" y1="${4*C+3}" x2="${(gx+1)*C}" y2="${15*C-3}"/>`;});
+  s+=`<rect class="door" x="${2*C}" y="${21.75*C}" width="${2*C}" height="${.25*C}"/>`;
+  s+=`<text class="dlabel" x="${6.5*C}" y="${.5*C+4}">Dairy</text><text class="dlabel" x="${16.5*C}" y="${.5*C+4}">Butchery</text><text class="dlabel" x="${26*C}" y="${.5*C+4}">Bakery</text>`;
+  s+=`<text class="dlabel" transform="translate(${.5*C+4},${8.5*C}) rotate(-90)">Fresh produce</text>`;
+  s+=`<text class="dlabel" transform="translate(${31.5*C-4},${8.5*C}) rotate(90)">Frozen</text>`;
+  s+=`<text class="dlabel" x="${17.5*C}" y="${20.6*C+3}">Tills</text>`;
+  s+=`<text class="wlabel" x="${4.3*C}" y="${21.5*C+4}">Entrance</text>`;
+  SPOTS.filter(p=>p.mark).forEach(p=>{s+=`<g class="spot-mark"><title>Scan sign: ${esc(p.name)}</title><rect class="o" x="${p.sx-6}" y="${p.sy-6}" width="12" height="12" rx="2"/><rect class="i" x="${p.sx-3.5}" y="${p.sy-3.5}" width="7" height="7" rx="1"/><rect class="o" x="${p.sx-1.5}" y="${p.sy-1.5}" width="3" height="3"/></g>`;});
+  AISLES.forEach(a=>{const cx=(a.x[0]+1)*C;[2.5,15.5].forEach(yy=>{
+    s+=`<g class="sign"><title>Aisle ${a.n}: ${esc(a.name)}</title><rect x="${cx-9}" y="${yy*C-9}" width="18" height="18" rx="3"/><text x="${cx}" y="${yy*C+4.5}">${a.n}</text></g>`;});});
+  $('af-static').innerHTML=s;
+}
+function drawDyn(){
+  if(!instoreBuilt)return;
+  let s='';const R=S.route,pts=a=>a.map(([x,y])=>`${x*C+C/2},${y*C+C/2}`).join(' ');
+  if(R){
+    const done=R.full.slice(0,S.walkIdx+1),rem=R.full.slice(S.walkIdx);
+    if(done.length>1)s+=`<polyline class="route route-done" points="${pts(done)}"/>`;
+    if(rem.length>1)s+=`<polyline class="route" points="${pts(rem)}"/>`;
+    const next=currentLeg(),all=[...R.found,...R.legs],multi=S.routeItems.length>1;
+    all.forEach(L=>{const it=L.item,picked=S.picked.has(it.id),isNext=L===next;
+      s+=`<rect class="stop${isNext?' next':''}${picked?' picked':''}" x="${it.x*C+1}" y="${it.y*C+1}" width="${C-2}" height="${C-2}" rx="3"><title>${esc(it.name)}</title></rect>`;
+      if(isNext)s+=`<circle class="ping" cx="${it.x*C+C/2}" cy="${it.y*C+C/2}" r="10"/>`;
+    });
+    if(multi)R.legs.forEach((L,k)=>{const it=L.item,bx=it.x*C+C-2,by=it.y*C+2;
+      s+=`<g class="badge${S.picked.has(it.id)?' picked':''}"><circle cx="${bx}" cy="${by}" r="7"/><text x="${bx}" y="${by+3.5}">${k+1}</text></g>`;});
+  }
+  const here=!!(S.located&&S.located.id&&S.user[0]===S.located.x&&S.user[1]===S.located.y);
+  if(here)s+=`<circle class="scanned" cx="${S.located.sx}" cy="${S.located.sy}" r="13"/>`;
+  const live=!!(T.on&&T.pos),ux=live?T.pos[0]*C:S.user[0]*C+C/2,uy=live?T.pos[1]*C:S.user[1]*C+C/2;
+  if(T.on){const hd=curHeading();if(hd!=null)s+=beamPath(ux,uy,hd);}
+  s+=`<circle class="you-pulse" cx="${ux}" cy="${uy}" r="9"/><circle class="you" cx="${ux}" cy="${uy}" r="6.5"><title>You are here</title></circle>`;
+  $('af-dyn').innerHTML=s;
+  $('af-note').innerHTML=(here?`At <b>${esc(S.located.name)}, ${esc(S.located.sub.toLowerCase())}</b>.`:`${T.on?'Near':'You’re at'} <b>${describe(S.user)}</b>.`)+(T.on?' Scan a sign to re-align.':' Tap open floor to move.');
+}
+function bigPrice(p){const[i,c]=p.toFixed(2).split('.');return`<span class="price" aria-label="${rand(p)}"><span class="r">R</span>${i}<sup>.${c}</sup></span>`;}
+function aisleBox(it){
+  if(it.aisle)return`<div class="aisle-box"><small>Aisle</small><b>${it.aisle.n}</b></div>`;
+  return`<div class="aisle-box"><small>${it.dept==='produce'?'Section':'Back wall'}</small><b class="word">${esc(DEPT[it.dept])}</b></div>`;
+}
+function tagCard(it){
+  const inList=S.list.some(i=>i.id===it.id);
+  return`<div class="tag"><div class="tag-top">${aisleBox(it)}<div><div class="tag-name">${esc(it.name)}</div><div class="tag-place">${esc(it.cat)}, ${esc(it.lvl)}</div></div></div>
+  <div class="tag-bottom">${bigPrice(it.price)}${inList?'<span style="font-weight:600">On your list</span>':`<button class="btn" data-afadd="${it.id}">Add to list</button>`}</div></div>`;
+}
+function renderDirections(){
+  const R=S.route;
+  if(!R){
+    let g=AISLES.map(a=>`<li><span class="num">${a.n}</span>${esc(a.name)}</li>`).join('');
+    g+=[['dairy','Dairy, butchery and bakery along the back wall'],['produce','Fresh produce on the left as you walk in'],['till','Tills at the front']]
+      .map(([c,t])=>`<li><span class="dept" style="background:var(--${c})"></span>${t}</li>`).join('');
+    const n=cartCount();
+    return`<div class="empty-state"><h2>Find anything in the store</h2><p>Search for a product and its shelf blinks on the map, or route your whole cart in one go.</p>
+      ${n?`<div class="rowbtns"><button class="btn primary" data-routecart>Route my cart (${n} item${n>1?'s':''})</button></div>`:''}
+      <ul class="guide">${g}</ul></div>`;
+  }
+  const next=currentLeg(),total=S.routeItems.length;
+  let h=next?tagCard(next.item):`<div class="done-card"><strong>${total>1?`All ${total} items found`:'Found it'}</strong>The tills are at the front of the store.</div>`;
+  const dist=Math.round((R.full.length-1)*M),mins=Math.max(1,Math.round(dist/50));
+  const left=R.legs.filter(L=>!S.picked.has(L.item.id)).length;
+  if(next&&!S.located)h+=`<div class="callout"><p>Directions start at the entrance. Scan the nearest aisle sign to start from where you’re standing.</p><button class="btn" type="button" data-scan>Scan sign</button></div>`;
+  if(next)h+=`<p class="summary">${left>1?`${left} stops, `:''}about ${dist} m, roughly ${mins} min on foot</p>`;
+  h+=`<div class="rowbtns">${next?`<button class="btn primary" id="af-track">${T.on?'Stop tracking':'Track my steps'}</button><button class="btn" id="af-walk">${S.walking?'Pause':'Simulate walking'}</button>`:''}<button class="btn" id="af-reset">Start again from entrance</button></div>`;
+  const multi=total>1;
+  R.found.forEach(F=>{h+=`<div class="leg found"><h3><span class="n">✓</span>${esc(F.item.name)}, found</h3></div>`;});
+  R.legs.forEach((L,k)=>{const f=S.picked.has(L.item.id);
+    h+=`<div class="leg${f?' found':''}">${multi?`<h3><span class="n">${f?'✓':k+1}</span>${esc(L.item.name)}</h3>`:''}<ol class="steps">${L.steps.map(st=>`<li data-at="${st.at}"${st.arrive?' class="arrive"':''}>${esc(st.text)}</li>`).join('')}</ol></div>`;});
+  return h;
+}
+function renderList(){
+  const n=cartCount();
+  const fromCart=n?`<button class="btn" data-cart2list>Add my cart (${n})</button>`:'';
+  if(!S.list.length)return`<div class="empty-state"><h2>Your list is empty</h2><p>Search for products and choose Add to list, or bring over your cart. Stops get ordered so you walk as little as possible.</p><div class="rowbtns">${fromCart}<button class="btn" id="af-sample">Add a sample list</button></div></div>`;
+  const tot=S.list.reduce((a,i)=>a+i.price,0);
+  return`<ul class="list">${S.list.map(i=>`<li><span>${i.emoji} ${esc(i.name)}</span><span class="l-place">${esc(i.place)}</span><span class="l-price">${rand(i.price)}</span><button class="rm" data-rm="${i.id}" aria-label="Remove ${esc(i.name)}">×</button></li>`).join('')}</ul>
+  <div class="total"><span>${S.list.length} item${S.list.length>1?'s':''}</span><span>${rand(tot)}</span></div>
+  <div class="rowbtns"><button class="btn primary" id="af-planlist">Plan route for my list</button>${fromCart}<button class="btn" id="af-clearlist">Clear</button></div>`;
+}
+function renderPanel(){
+  if(!instoreBuilt)return;
+  $('af-panel').innerHTML=`<div class="tabs" role="tablist"><button role="tab" data-tab="dir" aria-selected="${S.tab==='dir'}">Directions</button><button role="tab" data-tab="list" aria-selected="${S.tab==='list'}">My list (${S.list.length})</button></div>`
+    +(S.tab==='dir'?renderDirections():renderList());
+  updateProgress(false);
+}
+function updateProgress(scroll){
+  const lis=[...document.querySelectorAll('#af-panel ol.steps li[data-at]')];if(!lis.length)return;
+  let cur=null;lis.forEach(li=>{if(+li.dataset.at<=S.walkIdx)cur=li;});
+  lis.forEach(li=>{li.classList.toggle('current',li===cur);li.classList.toggle('past',cur&&+li.dataset.at<+cur.dataset.at);});
+  if(scroll&&cur)cur.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function render(){drawDyn();renderPanel();}
+
+function stopWalk(){S.walking=false;clearInterval(S.timer);S.timer=null;}
+function routeTo(items){stopWalk();S.routeItems=items.slice();S.picked.clear();if(T.on)syncFacing();buildRoute();S.tab='dir';render();}
+function setUser(x,y,face=null){if(!walk(x,y))return false;stopWalk();S.user=[x,y];S.facing=face;S.located='map';if(T.on){T.pos=[x+.5,y+.5];T.off=0;}buildRoute();render();return true;}
+function markArrivals(){
+  let picked=false;
+  S.route.legs.forEach(L=>{if(L.end===S.walkIdx&&!S.picked.has(L.item.id)){S.picked.add(L.item.id);picked=true;S.pause=6;toast(`Found: ${L.item.name}`);}});
+  return picked;
+}
+function tick(){
+  const R=S.route;if(!R){stopWalk();return;}
+  if(S.pause>0){S.pause--;return;}
+  if(S.walkIdx>=R.full.length-1){stopWalk();renderPanel();drawDyn();return;}
+  S.walkIdx++;S.user=R.full[S.walkIdx].slice();
+  const picked=markArrivals();drawDyn();
+  if(picked||!currentLeg()){if(!currentLeg())stopWalk();renderPanel();}
+  updateProgress(true);
+}
+function toggleWalk(){
+  if(S.walking){stopWalk();renderPanel();return;}
+  if(!S.route)return;
+  if(T.on)stopTracking();
+  if(S.walkIdx>=S.route.full.length-1&&currentLeg()){buildRoute();}
+  S.walking=true;markArrivals();
+  S.timer=setInterval(tick,window.matchMedia('(prefers-reduced-motion: reduce)').matches?260:150);
+  renderPanel();
+}
+function addToList(it){if(!S.list.some(i=>i.id===it.id)){S.list.push(it);toast(`Added ${it.name}`);}}
+function cartToList(){cartItems().forEach(({p})=>{if(!S.list.some(i=>i.id===p.id))S.list.push(p);});}
+// From anywhere in the app: open in-store mode and route these products
+function goRoute(items){
+  const doit=()=>{routeTo(items);$('v-instore').scrollTop=0;};
+  if(!App.store){App.pending=doit;show('instore');toast('Pick your store first');return;}
+  show('instore');doit();
+}
+
+/* ---------- live tracking: step counter + phone heading (pedestrian dead reckoning) ----------
+   Each bounce of the accelerometer is one step, and each step moves the dot one step length the way the
+   phone points. Heading comes from the gyroscope-based orientation, which is steadier indoors than the
+   magnetic compass (steel shelving and fridges throw that off). It is lined up with the map when tracking
+   starts, and again at every sign you scan, because we know which way people face when they scan one.
+   Within about 2 m of the planned route the dot rides the route; wander further and a new route is
+   planned. Walking between two scanned signs also tunes your step length. */
+const FACE_WORDS=['the back of the store, where the dairy fridges are','the freezers on the right-hand wall','the tills at the front','Fresh produce on the left-hand wall'];
+const SENS={low:1.5,normal:1.0,high:0.6};   // smallest bounce (m/s², gravity removed) that counts as a step
+const SNAP=1.4;                             // in map squares, about 2 m
+const SENSOR_VIEWER_NOTE='Motion sensors are switched off inside the Claude artifact viewer, so here’s the step pad. Open the app from a normal https link on your phone to count real steps.';
+const T={on:false,mode:null,pos:null,steps:0,dist:0,stepLen:0.7,sens:'normal',off:0,offset:null,raw:null,
+  hx:0,hy:1,ht:0,calib:null,padHeading:0,lastScan:null,gotMotion:false,gotHeading:false,waitT:0,note:'',
+  det:{g:9.81,lp:0,state:0,last:0,t:0}};
+
+function sensorsBlockedByPage(){
+  try{const pp=document.permissionsPolicy||document.featurePolicy;if(pp&&pp.allowsFeature)return!(pp.allowsFeature('accelerometer')&&pp.allowsFeature('gyroscope'));}catch(e){}
+  return false;
+}
+// iOS only hands over motion data after asking, and only from inside a tap, so this runs first in the tap handler
+function askMotion(){
+  const asks=[];
+  try{
+    if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')asks.push(DeviceMotionEvent.requestPermission());
+    if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function')asks.push(DeviceOrientationEvent.requestPermission());
+  }catch(e){return Promise.resolve('error');}
+  if(!asks.length)return Promise.resolve('granted');
+  return Promise.all(asks).then(r=>r.every(x=>x==='granted')?'granted':'denied',()=>'error');
+}
+// Which way the phone points, in degrees clockwise. "Forward" is the top edge plus the back of the phone,
+// so it's right whether the phone is held flat (reading the map), tilted, or upright (scanning a sign).
+function phoneHeading(e){
+  if(e.alpha==null)return null;
+  const r=Math.PI/180,a=e.alpha*r,b=(e.beta||0)*r,g=(e.gamma||0)*r;
+  const ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b),cg=Math.cos(g),sg=Math.sin(g);
+  const fe=-sa*cb-ca*sg-sa*sb*cg,fn=ca*cb-sa*sg+ca*sb*cg;
+  if(Math.hypot(fe,fn)<0.25)return null;
+  return(Math.atan2(fe,fn)/r+360)%360;
+}
+function onOrient(e){
+  const h=phoneHeading(e);if(h==null)return;
+  const now=e.timeStamp||performance.now(),rad=h*Math.PI/180;
+  if(!T.gotHeading){T.gotHeading=true;T.hx=Math.sin(rad);T.hy=Math.cos(rad);}
+  else{const dt=Math.min(.2,Math.max(.005,(now-T.ht)/1000)),k=1-Math.exp(-dt/.25);T.hx+=(Math.sin(rad)-T.hx)*k;T.hy+=(Math.cos(rad)-T.hy)*k;}
+  T.ht=now;T.raw=(Math.atan2(T.hx,T.hy)*180/Math.PI+360)%360;
+  if(T.calib!=null){T.offset=T.raw-T.calib;T.calib=null;drawDyn();}  // first reading: you're facing the way we asked
+}
+// Heading on the map: 0 = toward the back wall, 90 = toward the freezers
+function curHeading(){
+  if(T.mode==='pad')return T.padHeading;
+  if(T.raw==null||T.offset==null)return null;
+  return(T.raw-T.offset+720)%360;
+}
+function onMotion(e){
+  const a=e.accelerationIncludingGravity;if(!a||a.x==null)return;
+  T.gotMotion=true;
+  const D=T.det,now=e.timeStamp||performance.now(),dt=Math.min(.1,Math.max(.005,D.t?(now-D.t)/1000:.016));D.t=now;
+  const mag=Math.hypot(a.x,a.y,a.z);
+  D.g+=(mag-D.g)*(1-Math.exp(-dt/1.5));        // slow average: gravity plus sensor bias
+  D.lp+=(mag-D.g-D.lp)*(1-Math.exp(-dt/.06));  // quick smoothing of what's left: the bounce of walking
+  const hi=SENS[T.sens]||1;
+  if(D.state===0&&D.lp>hi){D.state=1;D.up=now;}                       // the bounce goes up…
+  else if(D.state===1){
+    if(D.lp<-hi*.4){D.state=0;if(now-D.last>300){D.last=now;onStep();}}  // …and back down: one step
+    else if(now-D.up>900)D.state=0;                                     // never came down: not a step
+  }
+}
+function onStep(){
+  if(!T.on||!T.pos)return;
+  let hd=curHeading();if(hd==null)hd=routeHeading();   // no heading yet: assume you're following the route
+  T.steps++;T.dist+=T.stepLen;
+  if(hd!=null)moveBy(T.stepLen,hd);
+  afterMove();
+}
+function routeHeading(){   // head for the next point on the route
+  const R=S.route;if(!R||R.full.length<2||!T.pos)return null;
+  const P=R.full,dist=j=>Math.hypot(P[j][0]+.5-T.pos[0],P[j][1]+.5-T.pos[1]);
+  let j=Math.min(S.walkIdx+1,P.length-1);while(j<P.length-1&&dist(j)<.3)j++;
+  if(dist(j)<.05)return null;
+  return(Math.atan2(P[j][0]+.5-T.pos[0],T.pos[1]-P[j][1]-.5)*180/Math.PI+360)%360;
+}
+function moveBy(m,deg){
+  const r=deg*Math.PI/180,d=m/M,[x,y]=T.pos,nx=x+Math.sin(r)*d,ny=y-Math.cos(r)*d;
+  const ok=(px,py)=>walk(Math.floor(px),Math.floor(py));
+  if(ok(nx,ny))T.pos=[nx,ny];else if(ok(nx,y))T.pos=[nx,y];else if(ok(x,ny))T.pos=[x,ny];  // slide along shelves
+}
+function nearestOnRoute(){
+  const P=S.route.full,n=P.length,i0=Math.max(0,S.walkIdx-2),i1=Math.min(n-2,S.walkIdx+16);let best=null;
+  for(let i=i0;i<=i1;i++){
+    const ax=P[i][0]+.5,ay=P[i][1]+.5,vx=P[i+1][0]-P[i][0],vy=P[i+1][1]-P[i][1];
+    const t=Math.max(0,Math.min(1,((T.pos[0]-ax)*vx+(T.pos[1]-ay)*vy)/((vx*vx+vy*vy)||1)));
+    // ties at corners go to the stretch ahead of you, so cutting a corner never pulls the dot backwards
+    const px=ax+vx*t,py=ay+vy*t,d=Math.hypot(T.pos[0]-px,T.pos[1]-py),score=d+(i<S.walkIdx?(S.walkIdx-i)*.08:(i-S.walkIdx)*.03);
+    if(!best||score<best.score)best={d,i,t,px,py,score};
+  }
+  return best;
+}
+// Is this heading roughly along the route here (this stretch, the one before, or the turn coming up)?
+function alongRoute(hit,hd){
+  if(hd==null)return true;
+  const P=S.route.full,seg=i=>(Math.atan2(P[i+1][0]-P[i][0],P[i][1]-P[i+1][1])*180/Math.PI+360)%360;
+  const diff=(a,b)=>{const d=Math.abs(a-b)%360;return d>180?360-d:d;};
+  return diff(hd,seg(hit.i))<60||(hit.i+1<P.length-1&&diff(hd,seg(hit.i+1))<60)||(hit.i>0&&diff(hd,seg(hit.i-1))<60);
+}
+function checkArrival(){
+  const R=S.route,L=currentLeg();if(!R||!L||!T.pos)return null;
+  const end=R.full[L.end];
+  if(S.walkIdx>=L.end||Math.hypot(T.pos[0]-end[0]-.5,T.pos[1]-end[1]-.5)<.8){S.walkIdx=Math.max(S.walkIdx,L.end);S.picked.add(L.item.id);return L;}
+  return null;
+}
+function afterMove(){
+  const R=S.route;let arrived=null;
+  if(R&&currentLeg()){
+    if(R.full.length>1){
+      const hit=nearestOnRoute();
+      if(hit&&hit.d<=SNAP&&alongRoute(hit,curHeading())){   // walking along it: ride the route
+        T.off=0;T.pos=[hit.px,hit.py];
+        const idx=hit.t>.5?hit.i+1:hit.i;if(idx>S.walkIdx)S.walkIdx=idx;
+      }else if(!hit||hit.d>SNAP){if(++T.off>=3){rerouteFromHere();return;}}  // 3 steps clear of it: new route
+    }
+    arrived=checkArrival();
+  }
+  const c=[Math.floor(T.pos[0]),Math.floor(T.pos[1])];if(walk(c[0],c[1]))S.user=c;
+  drawDyn();updateLive();
+  if(arrived){renderPanel();toast(arrived.steps[arrived.steps.length-1].text);if(navigator.vibrate)try{navigator.vibrate(80);}catch(e){}}
+  updateProgress(true);
+}
+function syncFacing(){const hd=curHeading();if(hd!=null)S.facing=Math.round(hd/90)%4;}
+function rerouteFromHere(){
+  T.off=0;const c=[Math.floor(T.pos[0]),Math.floor(T.pos[1])];
+  if(walk(c[0],c[1]))S.user=c;
+  syncFacing();S.located='map';buildRoute();render();updateLive();
+  toast('You’ve left the route, so here’s a new one');
+}
+// Walking distance between two map squares, in metres
+function routeMeters(a,b){
+  const D=dijkstra(a[0],a[1]),cell=b[1]*W+b[0];let best=-1,bc=Infinity;
+  for(let d=0;d<4;d++){const c=D.dist[cell*4+d];if(c<bc){bc=c;best=cell*4+d;}}
+  if(best<0||bc===Infinity)return 0;
+  let n=0;for(let s=best;D.prev[s]!==-1;s=D.prev[s])n++;
+  return n*M;
+}
+// A scan puts the dot exactly on the sign, lines the heading up (you face the sign to scan it), and
+// tunes step length from the steps counted since the last sign
+function alignToSpot(spot,how){
+  let msg='';
+  if(T.mode==='pad')T.padHeading=spot.face*90;
+  if(how==='pick')T.lastScan=null;   // picked from the list: you're not really standing there, so learn nothing
+  else{
+    if(T.mode==='sensors'){
+      if(T.raw!=null){T.offset=T.raw-spot.face*90;T.calib=null;msg=', heading lined up';}
+      else T.calib=spot.face*90;
+      if(T.lastScan&&T.lastScan.id!==spot.id){
+        const n=T.steps-T.lastScan.steps,walked=routeMeters([T.lastScan.x,T.lastScan.y],[spot.x,spot.y]);
+        if(n>=8&&walked){const len=walked/n;if(len>=.4&&len<=1.05){T.stepLen=Math.round((T.stepLen+len)*50)/100;msg+=`, step length tuned to ${T.stepLen.toFixed(2)} m`;}}
+      }
+    }
+    T.lastScan={id:spot.id,x:spot.x,y:spot.y,steps:T.steps};
+  }
+  T.pos=[spot.x+.5,spot.y+.5];T.off=0;
+  return msg;
+}
+function refFacing(){
+  if(S.facing!=null)return S.facing;
+  const R=S.route;if(R&&R.full.length>1){const d=dirOf(R.full[0],R.full[1]);if(d>=0)return d;}
+  return 0;
+}
+function beamPath(cx,cy,deg){
+  const r=30,p=a=>{const t=a*Math.PI/180;return`${(cx+Math.sin(t)*r).toFixed(1)},${(cy-Math.cos(t)*r).toFixed(1)}`;};
+  return`<path class="beam" d="M${cx.toFixed(1)},${cy.toFixed(1)} L${p(deg-28)} A${r},${r} 0 0 1 ${p(deg+28)} Z"/>`;
+}
+function openTrackSheet(){
+  stopWalk();
+  const here=!!(S.located&&S.located.id&&S.user[0]===S.located.x&&S.user[1]===S.located.y);
+  const words=here?`the ${S.located.name} sign you scanned`:FACE_WORDS[refFacing()];
+  const lens=[0.6,0.7,0.8];if(!lens.includes(T.stepLen))lens.push(T.stepLen);lens.sort((a,b)=>a-b);
+  const lenName=v=>v===0.6?'Short':v===0.7?'Average':v===0.8?'Long':'Tuned';
+  openSheet(`<h2 style="margin-top:0">Track my steps</h2>
+    <p class="muted">Your phone counts your steps and reads which way it’s pointing, so your dot moves as you walk. Scan any aisle sign you pass and the dot snaps back to exactly the right spot.</p>
+    <ol class="howto"><li>Hold your phone flat in front of you, screen up.</li><li>Face ${esc(words)}.</li><li>Tap start, then walk normally.</li></ol>
+    <div class="tune"><label>Step length<select id="lv-len">${lens.map(v=>`<option value="${v}"${v===T.stepLen?' selected':''}>${lenName(v)}, ${v.toFixed(2)} m</option>`).join('')}</select></label>
+      <label>Step detection<select id="lv-sens">${[['low','Less sensitive'],['normal','Normal'],['high','More sensitive']].map(([v,t])=>`<option value="${v}"${v===T.sens?' selected':''}>${t}</option>`).join('')}</select></label></div>
+    <div class="scan-alt"><button class="btn primary" id="lv-start" type="button">I’m facing that way, start</button>
+      <button class="btn" id="lv-padstart" type="button">Use the step pad instead (laptop or demo)</button>
+      <button class="btn" type="button" data-closesheet>Cancel</button></div>`);
+  $('lv-start').addEventListener('click',()=>startTracking('sensors'));
+  $('lv-padstart').addEventListener('click',()=>startTracking('pad'));
+}
+function startTracking(mode){
+  const perm=mode==='sensors'?askMotion():null;   // must be the first thing the tap does (iOS)
+  const len=parseFloat(($('lv-len')||{}).value),sens=($('lv-sens')||{}).value;
+  if(len)T.stepLen=len;if(sens)T.sens=sens;
+  const f=refFacing(),here=!!(S.located&&S.located.id&&S.user[0]===S.located.x&&S.user[1]===S.located.y);
+  closeSheet();stopWalk();
+  Object.assign(T,{on:true,mode,pos:[S.user[0]+.5,S.user[1]+.5],steps:0,dist:0,off:0,offset:null,raw:null,calib:f*90,padHeading:f*90,
+    gotMotion:false,gotHeading:false,det:{g:9.81,lp:0,state:0,last:0,t:0},
+    lastScan:here?{id:S.located.id,x:S.located.x,y:S.located.y,steps:0}:null});
+  const already=checkArrival();if(already)setTimeout(()=>toast(already.steps[already.steps.length-1].text),300);
+  if(mode==='pad'){showLive();return;}
+  if(sensorsBlockedByPage()){toPad(SENSOR_VIEWER_NOTE);return;}
+  showLive('Starting the motion sensors…');
+  perm.then(r=>{
+    if(!T.on||T.mode!=='sensors')return;
+    if(r!=='granted'){toPad('Motion access wasn’t allowed, so here’s the step pad. To count real steps, allow motion access for this site, then start again.');return;}
+    window.addEventListener('devicemotion',onMotion);window.addEventListener('deviceorientation',onOrient);
+    T.note='Hold the phone flat and walk normally. Scan any sign you pass to stay accurate.';updateLive();
+    clearTimeout(T.waitT);
+    T.waitT=setTimeout(()=>{
+      if(!T.on||T.mode!=='sensors')return;
+      if(!T.gotMotion)toPad('No motion sensors found here (laptops don’t have them), so here’s the step pad.');
+      else if(!T.gotHeading){T.note='Counting steps, but there’s no heading reading, so the dot follows your route.';updateLive();}
+    },2500);
+  });
+}
+function toPad(msg){
+  window.removeEventListener('devicemotion',onMotion);window.removeEventListener('deviceorientation',onOrient);clearTimeout(T.waitT);
+  T.mode='pad';showLive(msg);
+}
+function stopTracking(){
+  if(!T.on)return;
+  T.on=false;window.removeEventListener('devicemotion',onMotion);window.removeEventListener('deviceorientation',onOrient);clearTimeout(T.waitT);
+  if(T.pos){const c=[Math.floor(T.pos[0]),Math.floor(T.pos[1])];if(walk(c[0],c[1]))S.user=c;}
+  T.pos=null;
+  if(instoreBuilt){$('af-live').hidden=true;updateTrackBtn();render();}
+}
+function showLive(note){
+  T.note=note||(T.mode==='pad'?'Each tap is one step. Turn first, then step. With the map selected, the arrow keys work too.':'Hold the phone flat and walk normally. Scan any sign you pass to stay accurate.');
+  if(!instoreBuilt)return;
+  $('af-live').hidden=false;$('lv-pad').hidden=T.mode!=='pad';
+  updateLive();updateTrackBtn();render();
+}
+function updateLive(){
+  if(!T.on||!instoreBuilt)return;
+  $('lv-mode').textContent=T.mode==='pad'?'Step pad':'Tracking';
+  $('lv-stats').textContent=`${T.steps} step${T.steps===1?'':'s'}, ${Math.round(T.dist)} m, step length ${T.stepLen.toFixed(2)} m`;
+  $('lv-note').textContent=T.note;
+}
+function updateTrackBtn(){
+  const b=$('af-trackbtn');if(!b)return;
+  b.classList.toggle('on',T.on);b.setAttribute('aria-pressed',String(T.on));b.lastChild.textContent=T.on?'Stop':'Track';
+}
+function padStep(){if(T.on&&T.mode==='pad')onStep();}
+function padTurn(deg){if(!T.on||T.mode!=='pad')return;T.padHeading=(T.padHeading+deg+360)%360;drawDyn();}
+function padKey(e){
+  const m={ArrowUp:'step',ArrowLeft:-45,ArrowRight:45,ArrowDown:180}[e.key];if(m===undefined)return false;
+  e.preventDefault();if(m==='step')padStep();else padTurn(m);return true;
+}
+
+/* ---------- aisle-sign scanning: live camera first, then photo, then pick list ---------- */
+const Scan={open:false,stream:null,timer:0,busy:false,detector:undefined,frame:0,lastBad:0,canvas:document.createElement('canvas')};
+function spotFromText(text){
+  const raw=String(text).trim(),id=(raw.includes('#')?raw.slice(raw.lastIndexOf('#')+1):raw).toLowerCase();
+  return SPOTS.find(s=>s.id===id)||null; // only this store's sign ids are accepted; nothing is ever opened
+}
+function applySpot(spot,how){
+  stopWalk();S.user=[spot.x,spot.y];S.facing=spot.face;S.located=spot;
+  const extra=T.on?alignToSpot(spot,how):'';
+  buildRoute();render();updateLive();
+  toast(`You’re at ${spot.name}, ${spot.sub.toLowerCase()}${extra}`);
+}
+function scanStatus(m){const el=$('scan-status');if(el)el.textContent=m;}
+// Native detector where the browser has one (Chrome on Android, Safari 17+ on some devices); jsQR otherwise
+async function getDetector(){
+  if(Scan.detector!==undefined)return Scan.detector;
+  Scan.detector=null;
+  try{if('BarcodeDetector'in window){const f=await window.BarcodeDetector.getSupportedFormats();if(f.includes('qr_code'))Scan.detector=new window.BarcodeDetector({formats:['qr_code']});}}catch(e){}
+  return Scan.detector;
+}
+// Decode with jsQR from a centred crop of the source, scaled so its longest side is at most maxSide
+function jsqrFrom(src,sw,sh,maxSide,crop,both){
+  if(!window.jsQR||!sw||!sh)return null;
+  const cw=sw*crop,ch=sh*crop,k=Math.min(1,maxSide/Math.max(cw,ch)),w=Math.max(1,Math.round(cw*k)),h=Math.max(1,Math.round(ch*k)),c=Scan.canvas;
+  c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(src,(sw-cw)/2,(sh-ch)/2,cw,ch,0,0,w,h);
+  const r=window.jsQR(ctx.getImageData(0,0,w,h).data,w,h,{inversionAttempts:both?'attemptBoth':'dontInvert'});
+  return r&&r.data?r.data:null;
+}
+async function detectNative(src){
+  const d=await getDetector();if(!d)return null;
+  try{const r=await d.detect(src);return r&&r.length?r[0].rawValue:null;}catch(e){return null;}
+}
+function handleCode(text){
+  const spot=spotFromText(text);
+  if(spot){if(navigator.vibrate)try{navigator.vibrate(60);}catch(e){}closeSheet();applySpot(spot);return true;}
+  const now=Date.now();if(now-Scan.lastBad>2500){Scan.lastBad=now;scanStatus('That code isn’t one of this store’s aisle signs. Point at the QR code on the nearest aisle sign.');}
+  return false;
+}
+function cameraBlockedByPage(){
+  try{const pp=document.permissionsPolicy||document.featurePolicy;if(pp&&pp.allowsFeature)return!pp.allowsFeature('camera');}catch(e){}
+  return false;
+}
+const VIEWER_NOTE='Live scanning is switched off inside the Claude artifact viewer, which doesn’t allow cameras. It works when the app is opened from a normal https link.';
+function noCamera(msg,retry){
+  $('viewfinder').hidden=true;scanStatus(msg+' For now, take a photo of the sign or pick it from the list.');
+  $('scan-retry').hidden=!retry;
+}
+async function startCamera(){
+  $('scan-retry').hidden=true;
+  if(!window.isSecureContext){noCamera('Live scanning needs the app to be opened over https.',false);return;}
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){noCamera('This browser can’t open the camera.',false);return;}
+  if(cameraBlockedByPage()){noCamera(VIEWER_NOTE,false);return;}
+  $('viewfinder').hidden=false;scanStatus('Asking for camera access…');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    if(!Scan.open){stream.getTracks().forEach(t=>t.stop());return;}
+    Scan.stream=stream;const v=$('scan-video');v.srcObject=stream;
+    try{await v.play();}catch(e){}
+    scanStatus('Point your camera at the QR code on the nearest aisle sign. It scans by itself.');
+    Scan.frame=0;scanLoop();
+  }catch(err){
+    const n=err&&err.name;
+    if(n==='NotAllowedError'||n==='SecurityError')noCamera(window.top!==window&&n==='SecurityError'?VIEWER_NOTE:'Camera access was blocked. Allow the camera for this site in your browser settings, then try again.',true);
+    else if(n==='NotFoundError'||n==='OverconstrainedError')noCamera('No camera was found on this device.',false);
+    else if(n==='NotReadableError')noCamera('The camera is busy in another app. Close it and try again.',true);
+    else noCamera('The camera couldn’t start.',true);
+  }
+}
+function stopCamera(){
+  clearTimeout(Scan.timer);Scan.timer=0;
+  if(Scan.stream){Scan.stream.getTracks().forEach(t=>t.stop());Scan.stream=null;}
+  const v=$('scan-video');if(v)v.srcObject=null;
+}
+async function scanLoop(){
+  if(!Scan.open||!Scan.stream)return;
+  const v=$('scan-video');
+  if(v&&v.readyState>=2&&v.videoWidth&&!Scan.busy){
+    Scan.busy=true;
+    try{
+      let text=await detectNative(v);
+      // jsQR fallback: alternate between the framed centre (sharper, faster) and the whole picture
+      if(!text&&window.jsQR){const f=Scan.frame++%3;text=jsqrFrom(v,v.videoWidth,v.videoHeight,f===2?720:560,f===2?1:.7,f===2);}
+      if(text&&handleCode(text)){Scan.busy=false;return;}
+    }catch(e){}
+    Scan.busy=false;
+  }
+  Scan.timer=setTimeout(scanLoop,110);
+}
+function openScanner(){
+  Scan.open=true;Scan.lastBad=0;
+  openSheet(`<h2 style="margin-top:0">Scan an aisle sign</h2>
+    <div class="viewfinder" id="viewfinder" hidden><video id="scan-video" playsinline muted autoplay></video><div class="frame" aria-hidden="true"></div><div class="scanline" aria-hidden="true"></div></div>
+    <p class="scan-status" id="scan-status" role="status"></p>
+    <div class="scan-alt">
+      <button class="btn primary" id="scan-retry" type="button" hidden>Try the camera again</button>
+      <button class="btn" id="scan-photo-btn" type="button">Take a photo of the sign instead</button>
+      <label for="scan-pick">No printed signs nearby? Pick one to try it out:</label>
+      <select id="scan-pick"><option value="">Choose a sign…</option>${SPOTS.map(s=>`<option value="${s.id}">${esc(s.name)}, ${esc(s.sub.toLowerCase())}</option>`).join('')}</select>
+      <button class="btn" data-closesheet>Cancel</button></div>`);
+  $('scan-photo-btn').addEventListener('click',()=>$('scan-photo').click());
+  $('scan-retry').addEventListener('click',startCamera);
+  $('scan-pick').addEventListener('change',e=>{const s=SPOTS.find(p=>p.id===e.target.value);if(s){closeSheet();applySpot(s,'pick');}});
+  startCamera();
+}
+async function photoToImage(file){
+  if(window.createImageBitmap){try{return await createImageBitmap(file,{imageOrientation:'from-image'});}catch(e){try{return await createImageBitmap(file);}catch(e2){}}}
+  const url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
+  return await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=url;});
+}
+// Photos are retried at several sizes and crops: big phone photos often fail at one scale and read fine at another
+async function decodePhoto(img){
+  const native=await detectNative(img);if(native)return native;
+  if(!window.jsQR)return null;
+  const w=img.width||img.naturalWidth,h=img.height||img.naturalHeight;
+  for(const [side,crop] of [[1000,1],[1600,1],[700,1],[1000,.6],[1600,.6],[700,.45],[2400,1]]){
+    const t=jsqrFrom(img,w,h,side,crop,true);if(t)return t;
+    await new Promise(r=>setTimeout(r,0)); // keep the page responsive between attempts
+  }
+  return null;
+}
+$('scan-photo').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  if(!window.jsQR&&!(await getDetector())){scanStatus('The code reader didn’t load. Pick the sign you’re standing at from the list below.');return;}
+  scanStatus('Reading the photo…');
+  try{
+    const text=await decodePhoto(await photoToImage(f));
+    if(!text){scanStatus('No QR code found in that photo. Hold the phone square to the sign, with the whole code in the picture and no glare.');return;}
+    if(!handleCode(text))scanStatus('That code isn’t one of this store’s aisle signs. Try the code on the nearest aisle sign.');
+  }catch(err){scanStatus('That photo couldn’t be read. Try taking it again.');}
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&Scan.stream){stopCamera();noCamera('Scanning paused while the app was in the background.',true);}});
+
+function wireInstore(){
+  $('af-change').addEventListener('click',()=>{stopWalk();stopTracking();App.store=null;renderInstore();});
+  $('af-scanbtn').addEventListener('click',openScanner);
+  $('af-trackbtn').addEventListener('click',()=>{if(T.on)stopTracking();else openTrackSheet();});
+  $('lv-stop').addEventListener('click',stopTracking);
+  $('lv-step').addEventListener('click',padStep);
+  $('lv-left').addEventListener('click',()=>padTurn(-45));
+  $('lv-right').addEventListener('click',()=>padTurn(45));
+  const svg=$('af-map');
+  svg.addEventListener('click',e=>{
+    const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+    const p=pt.matrixTransform(svg.getScreenCTM().inverse()),x=Math.floor(p.x/C),y=Math.floor(p.y/C);
+    if(!setUser(x,y))toast('That’s a shelf or counter. Tap open floor instead.');
+  });
+  $('af-mapwrap').addEventListener('keydown',e=>{
+    if(T.on&&T.mode==='pad'&&padKey(e))return;
+    const k={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3}[e.key];if(k===undefined)return;
+    e.preventDefault();setUser(S.user[0]+DIRS[k][0],S.user[1]+DIRS[k][1],k);
+  });
+  $('af-panel').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.hasAttribute('data-scan')){openScanner();return;}
+    if(b.hasAttribute('data-routecart')){cartToList();routeTo(cartItems().map(x=>x.p));return;}
+    if(b.hasAttribute('data-cart2list')){cartToList();toast('Cart added to your list');renderPanel();return;}
+    if(b.dataset.tab){S.tab=b.dataset.tab;renderPanel();return;}
+    if(b.dataset.afadd){addToList(PRODUCTS[+b.dataset.afadd]);renderPanel();return;}
+    if(b.dataset.rm){S.list=S.list.filter(i=>i.id!==+b.dataset.rm);renderPanel();return;}
+    switch(b.id){
+      case'af-track':if(T.on)stopTracking();else openTrackSheet();break;
+      case'af-walk':toggleWalk();break;
+      case'af-reset':stopWalk();S.user=ENTRANCE.slice();S.facing=0;S.located=null;S.picked.clear();if(T.on){T.pos=[ENTRANCE[0]+.5,ENTRANCE[1]+.5];T.off=0;T.lastScan=null;if(T.mode==='pad')T.padHeading=0;}buildRoute();render();updateLive();break;
+      case'af-planlist':routeTo(S.list);$('v-instore').scrollTo({top:0,behavior:'smooth'});break;
+      case'af-clearlist':S.list=[];renderPanel();break;
+      case'af-sample':['Amasi 2L','Boerewors 1kg','Super maize meal 5kg','Rooibos tea, 80 bags','Nappies size 3, 46s','White bread loaf 700g','Tomatoes 1kg']
+        .forEach(n=>{const p=byName(n);if(p&&!S.list.includes(p))S.list.push(p);});renderPanel();break;
+    }
+  });
+  const q=$('af-q'),res=$('af-results');let active=0,matches=[];
+  function search(){
+    const terms=q.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    if(!terms.length){res.hidden=true;return;}
+    matches=PRODUCTS.filter(p=>{const hay=`${p.name} ${p.cat}`.toLowerCase();return terms.every(t=>hay.includes(t));}).slice(0,8);
+    active=0;
+    res.innerHTML=matches.length?matches.map((p,i)=>`<li role="option"><button class="${i===0?'active':''}" data-pick="${p.id}"><span>${p.emoji} ${esc(p.name)}</span><span class="r-price">${rand(p.price)}</span><span class="r-place">${esc(p.place)}</span></button></li>`).join('')
+      :`<li class="empty">Nothing matches “${esc(q.value)}”. Try a shorter word, like “milk”.</li>`;
+    res.hidden=false;
+  }
+  function pick(p){res.hidden=true;q.value=p.name;q.blur();routeTo([p]);}
+  q.addEventListener('input',search);
+  q.addEventListener('focus',()=>{if(q.value)search();});
+  q.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){res.hidden=true;return;}
+    if(!matches.length||res.hidden)return;
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();active=(active+(e.key==='ArrowDown'?1:-1)+matches.length)%matches.length;
+      res.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===active));}
+    if(e.key==='Enter'){e.preventDefault();pick(matches[active]);}
+  });
+  res.addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(b)pick(PRODUCTS[+b.dataset.pick]);});
+  document.addEventListener('click',e=>{if(!e.target.closest('.af-search'))res.hidden=true;});
+  $('af-chips').innerHTML=['Rooibos','Boerewors','Amasi','Nappies','Ice cream'].map(t=>`<button data-q="${t}">${t}</button>`).join('');
+  $('af-chips').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;
+    const p=PRODUCTS.find(x=>x.name.toLowerCase().includes(b.dataset.q.toLowerCase()));if(p)pick(p);});
+}
+
+/* =====================================================================
+   GLOBAL CLICK HANDLING
+   ===================================================================== */
+$('phone').addEventListener('click',e=>{
+  const t=e.target;let b;
+  if((b=t.closest('[data-inc]'))){changeQty(+b.dataset.inc,1);return;}
+  if((b=t.closest('[data-dec]'))){changeQty(+b.dataset.dec,-1);return;}
+  if((b=t.closest('[data-findit]'))){const p=PRODUCTS[+b.dataset.findit];closeSheet();goRoute([p]);return;}
+  if((b=t.closest('[data-closesheet]'))){closeSheet();return;}
+  if(t.id==='sheet'){closeSheet();return;}
+  if((b=t.closest('[data-store]'))){chooseStore(b.dataset.store);if(App.pending){const f=App.pending;App.pending=null;f();}return;}
+  if((b=t.closest('[data-nav]'))){closeSheet();show(b.dataset.nav);return;}
+  if((b=t.closest('[data-cat]'))){App.searchCat=b.dataset.cat;App.searchQ='';show('search');return;}
+  if((b=t.closest('[data-scat]'))){App.searchCat=b.dataset.scat||null;renderSearch();return;}
+  if((b=t.closest('[data-open]'))){openProduct(+b.dataset.open);return;}
+  if(t.id==='samplecart'){['Boerewors 1kg','Super maize meal 5kg','Amasi 2L','Rooibos tea, 80 bags','White bread loaf 700g','Tomatoes 1kg','Nappies size 3, 46s','Cola 2L']
+    .forEach(n=>{const p=byName(n);App.cart[p.id]=1;});refreshCtl(0);renderCart();return;}
+  if(t.id==='cart2store'){cartToList();goRoute(cartItems().map(x=>x.p));return;}
+  if(t.id==='checkout'){openSheet(`<h2 style="margin-top:0">This is a prototype</h2><p class="muted">No order is placed and nothing is charged. In the real app this is where checkout and delivery tracking would go.</p>
+    <div class="scan-alt"><button class="btn primary" id="cart2store">Shop it in store instead</button><button class="btn" data-closesheet>Back to cart</button></div>`);return;}
+});
+$('phone').addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('sheet').hidden){closeSheet();return;}
+  const c=e.target.closest&&e.target.closest('[data-open]');
+  if(c&&e.target===c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openProduct(+c.dataset.open);}
+});
+
+// Scanning a printed sign with the phone's camera app opens this page at #<spot>, e.g. #a4-front
+function fromHash(){
+  let id='';try{id=decodeURIComponent(location.hash.slice(1)).toLowerCase();}catch(e){}
+  const s=SPOTS.find(p=>p.id===id);if(!s)return;
+  if(!App.store)App.store=STORES[0].id;
+  show('instore');applySpot(s);
+}
+show('home');fromHash();window.addEventListener('hashchange',fromHash);
+})();
+</script>
+</body>
+</html>
