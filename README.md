@@ -1,2 +1,0 @@
-# HackyDeeHack
-Grocery Store Application
