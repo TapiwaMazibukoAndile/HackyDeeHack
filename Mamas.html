@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pink Mama’s: find your way</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#FFF6F8;--panel:#FFFFFF;--ink:#2B1A21;--muted:#6B5560;--line:#F1D9E2;
+  --pink:#D6246E;--pink-ink:#FFFFFF;--pink-soft:#FCE3ED;--pink-text:#B3195A;
+  --wall:#5E7A5D;--sage:#DCE6D7;--wood:#E7CFB4;--wood-2:#CFAE8B;--tile:#F6E2D2;--tile-2:#E6C3A9;
+  --bath:#E3ECEE;--bath-2:#C9D7DB;--mamas:#F9DDE8;--table:#FFFFFF;--table-line:#5E7A5D;--fix:#2E2326;--fix-ink:#FFFFFF;
+  --brick:#A6583D;--counter:#5E7A5D;--desk:#8A5A35;--you:#2B1A21;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#1D1317;--panel:#291C22;--ink:#F8EAF0;--muted:#C9AFBA;--line:#43303A;
+    --pink:#D6246E;--pink-ink:#FFFFFF;--pink-soft:#4A2232;--pink-text:#FF8DBA;
+    --wall:#8FAA8C;--sage:#2E3A2E;--wood:#4B3A2C;--wood-2:#5E4836;--tile:#4D3B33;--tile-2:#634B40;
+    --bath:#2D3A3E;--bath-2:#3C4C51;--mamas:#4A2836;--table:#3A2A31;--table-line:#A9C2A6;--fix:#E9DCD9;--fix-ink:#2B1A21;
+    --brick:#C77A5E;--counter:#7E9A7B;--desk:#B07D55;--you:#F8EAF0;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1D1317;--panel:#291C22;--ink:#F8EAF0;--muted:#C9AFBA;--line:#43303A;
+  --pink:#D6246E;--pink-ink:#FFFFFF;--pink-soft:#4A2232;--pink-text:#FF8DBA;
+  --wall:#8FAA8C;--sage:#2E3A2E;--wood:#4B3A2C;--wood-2:#5E4836;--tile:#4D3B33;--tile-2:#634B40;
+  --bath:#2D3A3E;--bath-2:#3C4C51;--mamas:#4A2836;--table:#3A2A31;--table-line:#A9C2A6;--fix:#E9DCD9;--fix-ink:#2B1A21;
+  --brick:#C77A5E;--counter:#7E9A7B;--desk:#B07D55;--you:#F8EAF0;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 10px;max-width:1180px;margin:0 auto}
+.brand{display:flex;flex-direction:column;line-height:1.05}
+.brand b{font-family:"Gloock",Georgia,"Times New Roman",serif;font-weight:400;font-size:32px;color:var(--pink-text);letter-spacing:-.01em}
+.brand span{font-size:14px;color:var(--muted);margin-top:4px}
+.modes{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.modes button{border:0;background:none;border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px;color:var(--muted);min-height:40px}
+.modes button[aria-pressed="true"]{background:var(--pink);color:var(--pink-ink)}
+
+.layout{max-width:1180px;margin:0 auto;padding:0 18px 28px;display:grid;gap:14px;grid-template-columns:1fr;grid-template-areas:"ask" "map" "dirs"}
+.ask{grid-area:ask}.mapcard{grid-area:map}.dirs{grid-area:dirs}
+@media (min-width:900px){
+  .layout{grid-template-columns:380px 1fr;grid-template-areas:"ask map" "dirs map";align-items:start}
+  .mapcard{position:sticky;top:12px}
+}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.where{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.where label{font-weight:600;font-size:15px}
+select,input[type="text"]{border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;font-size:16px;min-height:44px}
+.where select{flex:1;min-width:150px}
+h2{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:24px;margin:0 0 10px;letter-spacing:-.005em}
+.dests{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dest{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 12px;text-align:left;font-weight:600;font-size:15px;min-height:48px;line-height:1.25}
+.dest small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.dest[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:var(--pink-ink)}
+.dest[aria-pressed="true"] small{color:var(--pink-ink)}
+
+.tform{display:flex;gap:8px;align-items:flex-end}
+.tform label{display:grid;gap:4px;font-weight:600;font-size:15px;flex:1}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;min-height:44px;white-space:nowrap}
+.btn.pink{background:var(--pink);color:var(--pink-ink)}
+.btn.quiet{background:var(--bg);border:1.5px solid var(--line)}
+.err{color:var(--pink-text);font-size:13px;font-weight:600;margin:6px 0 0;min-height:1em}
+.from{display:flex;align-items:center;gap:10px;margin:12px 0 4px;flex-wrap:wrap}
+.from label{font-weight:600;font-size:15px}
+.note{font-size:13px;color:var(--muted);margin:4px 0 0}
+.areas{margin-top:14px;display:grid;gap:10px}
+.areas h3{font-size:14px;font-weight:700;margin:0 0 6px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 11px;font-weight:600;font-size:14px;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:var(--pink-ink)}
+
+.mapcard{padding:10px}
+.maphead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 4px 8px}
+.maphead span{font-size:14px;color:var(--muted)}
+.mapwrap{border-radius:12px;overflow:hidden;background:var(--sage);aspect-ratio:4/5;max-height:72vh;width:100%}
+@media (min-width:900px){.mapwrap{aspect-ratio:auto;height:calc(100vh - 110px);max-height:none}}
+.mapwrap svg{width:100%;height:100%;display:block}
+.room{stroke:var(--wall);stroke-width:1.6}
+.p-wood{fill:var(--wood)}.p-wood-l{stroke:var(--wood-2);stroke-width:.7;fill:none}
+.p-tile{fill:var(--tile)}.p-tile-l{stroke:var(--tile-2);stroke-width:.8;fill:none}
+.p-bath{fill:var(--bath)}.p-bath-l{stroke:var(--bath-2);stroke-width:.7;fill:none}
+.mamas{fill:var(--mamas);fill-opacity:.55}
+.tbl{fill:var(--table);stroke:var(--table-line);stroke-width:1}
+.tlbl{fill:var(--ink);font-size:8.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.rlbl{fill:var(--ink);font-size:12px;font-weight:700;text-anchor:middle;opacity:.78;pointer-events:none}
+.slbl{fill:var(--muted);font-size:10px;font-weight:600;text-anchor:middle}
+.fix{fill:var(--fix)}.fix-brick{fill:var(--brick)}.fix-counter{fill:var(--counter)}.fix-desk{fill:var(--desk)}
+.flbl{fill:var(--fix-ink);font-size:8px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.flbl-out{fill:var(--ink);font-size:9px;font-weight:700;text-anchor:middle;pointer-events:none}
+.padel{fill:none;stroke:var(--wall);stroke-width:1;stroke-dasharray:5 4}
+.route-case{fill:none;stroke:var(--panel);stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.route{fill:none;stroke:var(--pink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.hit{fill:var(--pink);stroke:var(--pink);stroke-width:2}
+.hit-lbl{fill:var(--pink-ink)}
+.mine{fill:var(--you);stroke:var(--you);stroke-width:2}
+.mine-lbl{fill:var(--panel)}
+.pin{fill:var(--pink);stroke:var(--panel);stroke-width:2.5}
+.ring{fill:none;stroke:var(--pink);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{transform:scale(.5);opacity:1}100%{transform:scale(2.2);opacity:0}}
+.you{fill:var(--you);stroke:var(--panel);stroke-width:3}
+.you-lbl{fill:var(--ink);font-size:10px;font-weight:700}
+
+.dirs h2{margin-bottom:4px}
+.dirs .sum{color:var(--muted);margin:0 0 10px}
+.dirs ol{margin:0;padding:0;list-style:none;counter-reset:s}
+.dirs li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.dirs li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--pink-soft);color:var(--pink-text);display:grid;place-items:center;font-weight:700;font-size:14px}
+.dirs li.last{font-weight:700}
+.dirs li.last::before{background:var(--pink);color:var(--pink-ink)}
+.empty{color:var(--muted);margin:0}
+.foot{max-width:1180px;margin:0 auto;padding:0 18px 24px;font-size:13px;color:var(--muted)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.ring{animation:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>Pink Mama’s</b><span>Find your way around</span></div>
+  <div class="modes" role="group" aria-label="Who is using this">
+    <button type="button" data-mode="guest" aria-pressed="true">Guest</button>
+    <button type="button" data-mode="staff" aria-pressed="false">Staff</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="card ask" aria-label="Where to go">
+    <div id="guest-pane">
+      <div class="where"><label for="where">You’re at</label><select id="where"></select></div>
+      <h2>Where to?</h2>
+      <div class="dests" id="dests"></div>
+    </div>
+    <div id="staff-pane" hidden>
+      <h2>Find a table</h2>
+      <form class="tform" id="tform" novalidate>
+        <label for="tnum">Table number<input type="text" id="tnum" inputmode="numeric" autocomplete="off" placeholder="For example 42" aria-describedby="terr"></label>
+        <button class="btn pink" type="submit">Show the way</button>
+      </form>
+      <p class="err" id="terr" role="alert"></p>
+      <div class="from"><label for="from">Starting from</label><select id="from"><option value="bar">The bar</option><option value="entrance">The entrance</option></select></div>
+      <p class="note">Routes start at the bar until the kitchen pass is added to the map.</p>
+      <div class="areas" id="areas"></div>
+    </div>
+  </section>
+
+  <section class="card mapcard" aria-label="Map">
+    <div class="maphead"><span id="mapnote">The whole restaurant</span><button class="btn quiet" type="button" id="fit">Show everything</button></div>
+    <div class="mapwrap">
+      <svg id="map" role="img" aria-label="Map of Pink Mama’s with the route" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <pattern id="wood" width="9" height="44" patternUnits="userSpaceOnUse"><rect class="p-wood" width="9" height="44"/><path class="p-wood-l" d="M0 0V44M4.5 0V17M4.5 29V44"/></pattern>
+          <pattern id="tile" width="12" height="12" patternUnits="userSpaceOnUse"><rect class="p-tile" width="12" height="12"/><path class="p-tile-l" d="M0 12L6 6L12 12M0 6L6 0L12 6"/></pattern>
+          <pattern id="bath" width="9" height="9" patternUnits="userSpaceOnUse"><rect class="p-bath" width="9" height="9"/><path class="p-bath-l" d="M0 0H9M0 0V9"/></pattern>
+        </defs>
+        <g id="static"></g><g id="dyn"></g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="card dirs" id="dirs" aria-live="polite"></section>
+</main>
+<p class="foot">A wayfinding prototype for Pink Mama’s JHB. Distances come from measurements taken in the restaurant; table positions come from the floor plans and are approximate.</p>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- the floor plan, in metres: x runs east, y runs south, the entrance door is at 0,0 ---------- */
+const ROOMS=[
+  {id:'hall',x0:-1.6,y0:-1.0,x1:1.6,y1:0.8,floor:'wood',into:'into the entrance'},
+  {id:'piano',x0:-4.6,y0:-6.4,x1:3.0,y1:-1.0,floor:'wood',into:'into the Piano Room',label:'Piano Room',lx:-2.7,ly:-1.45},
+  {id:'mamas',x0:3.0,y0:-6.0,x1:6.2,y1:-3.4,floor:'wood',into:'into Mama’s Room',label:'Mama’s Room',lx:4.6,ly:-3.7,tint:true},
+  {id:'corr',x0:-6.2,y0:-2.9,x1:-4.6,y1:-1.9,floor:'wood',into:'into the bathroom passage'},
+  {id:'bar',x0:-7.4,y0:-5.6,x1:-4.6,y1:-2.9,floor:'wood',into:'into the bar',label:'Bar',lx:-5.6,ly:-3.35},
+  {id:'ladies',x0:-8.0,y0:-2.9,x1:-6.2,y1:-1.4,floor:'bath',into:'into the female bathroom',label:'Female',lx:-7.1,ly:-1.75},
+  {id:'gents',x0:-6.2,y0:-1.9,x1:-4.6,y1:-0.2,floor:'bath',into:'into the male bathroom',label:'Male',lx:-5.4,ly:-0.55},
+  {id:'walk',x0:-2.4,y0:-8.1,x1:2.4,y1:-6.4,floor:'wood',into:''},
+  {id:'tiles',x0:-2.4,y0:-16.4,x1:2.4,y1:-8.1,floor:'tile',into:'onto the tiled walkway'},
+  {id:'veranda',x0:2.4,y0:-15.6,x1:11.6,y1:-8.6,floor:'tile',into:'onto the veranda',label:'Veranda',lx:7.1,ly:-8.95},
+  {id:'court',x0:-8.6,y0:-23.6,x1:8.6,y1:-16.4,floor:'tile',into:'into the courtyard',label:'Courtyard',lx:-5.3,ly:-16.75}
+];
+/* openings between rooms; you can only cross from one room to another through one of these */
+const DOORS=[
+  {x0:-1.2,y0:-1.2,x1:1.2,y1:-0.8,floor:'wood'},
+  {x0:2.8,y0:-5.2,x1:3.2,y1:-4.2,floor:'wood'},
+  {x0:-4.8,y0:-2.7,x1:-4.4,y1:-2.1,floor:'wood'},
+  {x0:-5.8,y0:-2.1,x1:-5.0,y1:-1.7,floor:'wood'},
+  {x0:-6.4,y0:-2.7,x1:-6.0,y1:-2.1,floor:'wood'},
+  {x0:-6.0,y0:-3.1,x1:-5.0,y1:-2.7,floor:'wood'},
+  {x0:-2.0,y0:-6.6,x1:2.0,y1:-6.2,floor:'wood'},
+  {x0:-2.0,y0:-8.3,x1:2.0,y1:-7.9,floor:'tile'},
+  {x0:2.2,y0:-14.6,x1:2.6,y1:-9.6,floor:'tile'},
+  {x0:-2.0,y0:-16.6,x1:2.0,y1:-16.2,floor:'tile'}
+];
+/* fixed things, as centred rectangles */
+const FIX=[
+  {label:'Piano',kind:'',x:-2.16,y:-3.0,w:2.08,h:0.64},
+  {label:'Fireplace',kind:'brick',x:-4.03,y:-4.35,w:0.86,h:1.54,out:true},
+  {label:'Bar counter',kind:'counter',x:-6.55,y:-4.95,w:1.3,h:0.9},
+  {label:'Pizza oven',kind:'',x:11.22,y:-12.26,w:0.65,h:3.7,out:true},
+  {label:'Host',kind:'desk',x:1.15,y:-0.4,w:0.6,h:1.0}
+];
+const TABLES=[{"id":"T1","area":"piano","shape":"r","x":4.6,"y":-4.7,"w":2.4,"h":1.1,"pax":"8-12"},{"id":"T10","area":"piano","shape":"r","x":-1.88,"y":-5.54,"w":2.77,"h":1.12,"pax":"8"},{"id":"T11","area":"piano","shape":"c","x":-2.48,"y":-4.24,"r":0.5,"pax":"2-4"},{"id":"T12","area":"piano","shape":"c","x":-0.96,"y":-4.29,"r":0.45,"pax":"1-2"},{"id":"T20","area":"veranda","shape":"r","x":3.48,"y":-14.8,"w":2.01,"h":0.97,"pax":"8-12"},{"id":"T21","area":"veranda","shape":"c","x":2.99,"y":-13.65,"r":0.42,"pax":"1-3"},{"id":"T22","area":"veranda","shape":"c","x":2.99,"y":-11.44,"r":0.42,"pax":"1-2"},{"id":"T23","area":"veranda","shape":"c","x":3.9,"y":-10.8,"r":0.42,"pax":"1-2"},{"id":"T24","area":"veranda","shape":"c","x":3.9,"y":-12.96,"r":0.42,"pax":"4-6"},{"id":"T25","area":"veranda","shape":"c","x":4.96,"y":-13.52,"r":0.42,"pax":"4-6"},{"id":"T26","area":"veranda","shape":"c","x":4.96,"y":-11.25,"r":0.42,"pax":"4-6"},{"id":"T30","area":"veranda","shape":"c","x":6.16,"y":-12.55,"r":0.42,"pax":"3-4"},{"id":"T31","area":"veranda","shape":"c","x":6.16,"y":-11.24,"r":0.42,"pax":"3-4"},{"id":"T32","area":"veranda","shape":"c","x":7.32,"y":-11.24,"r":0.42,"pax":"3-4"},{"id":"T33","area":"veranda","shape":"c","x":7.32,"y":-12.55,"r":0.42,"pax":"3-4"},{"id":"T40","area":"veranda","shape":"r","x":9.97,"y":-14.8,"w":2.15,"h":0.97,"pax":"8-12"},{"id":"T41","area":"veranda","shape":"c","x":8.48,"y":-13.34,"r":0.42,"pax":"4-6"},{"id":"T42","area":"veranda","shape":"c","x":8.48,"y":-11.1,"r":0.42,"pax":"4-6"},{"id":"T43","area":"veranda","shape":"c","x":9.29,"y":-11.95,"r":0.42,"pax":"1-2"},{"id":"T44","area":"veranda","shape":"c","x":9.79,"y":-10.94,"r":0.42,"pax":"1-2"},{"id":"T45","area":"veranda","shape":"c","x":10.33,"y":-11.75,"r":0.42,"pax":"1-3"},{"id":"T50","area":"court","shape":"r","x":-6.85,"y":-22.1,"w":2.03,"h":0.74,"pax":""},{"id":"T51","area":"court","shape":"r","x":-7.4,"y":-19.59,"w":1.08,"h":2.6,"pax":""},{"id":"T52","area":"court","shape":"c","x":-5.69,"y":-20.46,"r":0.55,"pax":"2-3"},{"id":"T53","area":"court","shape":"c","x":-5.44,"y":-18.14,"r":0.67,"pax":"4-6"},{"id":"T54","area":"court","shape":"c","x":-3.39,"y":-20.56,"r":0.68,"pax":"4-6"},{"id":"T55","area":"court","shape":"c","x":-3.14,"y":-18.2,"r":0.55,"pax":"2-3"},{"id":"T60","area":"court","shape":"c","x":0.47,"y":-21.09,"r":0.56,"pax":"2-3"},{"id":"T61","area":"court","shape":"c","x":0.79,"y":-18.56,"r":0.73,"pax":"4-6"},{"id":"T62","area":"court","shape":"c","x":2.58,"y":-21.09,"r":0.56,"pax":"2-3"},{"id":"T63","area":"court","shape":"c","x":3.17,"y":-18.49,"r":0.56,"pax":"2-3"},{"id":"T64","area":"court","shape":"c","x":4.99,"y":-20.94,"r":0.73,"pax":"4-6"},{"id":"T65","area":"court","shape":"c","x":5.26,"y":-18.66,"r":0.56,"pax":"2-3"},{"id":"T66","area":"court","shape":"r","x":6.72,"y":-22.61,"w":2.06,"h":0.74,"pax":""},{"id":"T67","area":"court","shape":"r","x":7.37,"y":-19.59,"w":1.08,"h":2.6,"pax":""},{"id":"T70","area":"court","shape":"r","x":-1.34,"y":-19.38,"w":1.26,"h":4.09,"pax":"6-10"},{"id":"T100","area":"veranda","shape":"c","x":3.02,"y":-9.5,"r":0.42,"pax":"1-2"},{"id":"T101","area":"veranda","shape":"c","x":4.24,"y":-9.5,"r":0.42,"pax":"1-3"}];
+const AREA_NAME={piano:'Piano Room',veranda:'Veranda',court:'Courtyard'};
+const DESTS=[
+  {id:'ladies',title:'To the female bathroom',name:'Female bathroom',hint:'Past the piano',x:-7.1,y:-2.2,arrive:'You’re at the female bathroom.'},
+  {id:'gents',title:'To the male bathroom',name:'Male bathroom',hint:'Just before the female one',x:-5.4,y:-1.0,arrive:'You’re at the male bathroom.'},
+  {id:'bar',title:'To the bar',name:'Bar',hint:'Next to the bathrooms',x:-5.6,y:-3.7,arrive:'You’re at the bar.'},
+  {id:'oven',title:'To the pizza oven',name:'Pizza oven',hint:'Far end of the veranda',x:10.45,y:-13.4,arrive:'The pizza oven is in front of you.'},
+  {id:'veranda',title:'To the veranda',name:'Veranda',hint:'Right, off the tiles',x:3.6,y:-12.2,arrive:'You’re on the veranda.'},
+  {id:'court',title:'To the courtyard',name:'Courtyard',hint:'Straight through',x:0.2,y:-17.2,arrive:'You’re in the courtyard.'},
+  {id:'piano',title:'To the Piano Room',name:'Piano Room',hint:'Just inside',x:-1.6,y:-2.3,arrive:'You’re in the Piano Room.'},
+  {id:'mamas',title:'To Mama’s Room',name:'Mama’s Room',hint:'Private dining',x:4.0,y:-3.75,arrive:'You’re in Mama’s Room.'},
+  {id:'entrance',title:'To the front door',name:'Way out',hint:'The front door',x:0,y:0.3,arrive:'You’re at the front door.'}
+];
+
+/* ---------- walking grid ---------- */
+const MINX=-9,MAXX=12,MINY=-25.6,MAXY=1,CELL=0.2,K=22;
+const GW=Math.round((MAXX-MINX)/CELL),GH=Math.round((MAXY-MINY)/CELL),N=GW*GH;
+const roomOf=new Int16Array(N).fill(-1),isDoor=new Uint8Array(N),blocked=new Uint8Array(N);
+const inR=(r,x,y)=>x>=r.x0&&x<r.x1&&y>=r.y0&&y<r.y1;
+const gx=i=>MINX+(i+.5)*CELL,gy=j=>MINY+(j+.5)*CELL;
+for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=gx(i),y=gy(j),c=j*GW+i;roomOf[c]=ROOMS.findIndex(r=>inR(r,x,y));if(DOORS.some(d=>inR(d,x,y)))isDoor[c]=1;}
+function block(s,pad){
+  const hw=s.shape==='c'?s.r+pad:s.w/2+pad,hh=s.shape==='c'?s.r+pad:s.h/2+pad;
+  const i0=Math.max(0,Math.floor((s.x-hw-MINX)/CELL)),i1=Math.min(GW-1,Math.floor((s.x+hw-MINX)/CELL));
+  const j0=Math.max(0,Math.floor((s.y-hh-MINY)/CELL)),j1=Math.min(GH-1,Math.floor((s.y+hh-MINY)/CELL));
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const x=gx(i),y=gy(j);
+    if(s.shape==='c'?Math.hypot(x-s.x,y-s.y)<=hw:Math.abs(x-s.x)<=hw&&Math.abs(y-s.y)<=hh)blocked[j*GW+i]=1;}
+}
+TABLES.forEach(t=>block(t,0.12));FIX.forEach(f=>block({shape:'r',x:f.x,y:f.y,w:f.w,h:f.h},0.08));
+const cellAt=(x,y)=>Math.min(GH-1,Math.max(0,Math.floor((y-MINY)/CELL)))*GW+Math.min(GW-1,Math.max(0,Math.floor((x-MINX)/CELL)));
+const ok=c=>roomOf[c]>=0&&!blocked[c];
+const canStep=(a,b)=>ok(a)&&ok(b)&&(roomOf[a]===roomOf[b]||isDoor[a]===1||isDoor[b]===1);
+function nearestOk(x,y){
+  const s=cellAt(x,y);if(ok(s))return s;
+  const seen=new Uint8Array(N),q=[s];seen[s]=1;
+  for(let h=0;h<q.length&&h<4000;h++){const c=q[h],i=c%GW,j=(c/GW)|0;
+    for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=GW||nj>=GH)continue;const n=nj*GW+ni;if(seen[n])continue;seen[n]=1;if(ok(n))return n;q.push(n);}}
+  return s;
+}
+/* routes follow the room the way people walk it: straight legs, few turns, not hugging tables or walls */
+/* the open floor all round a table, within arm's reach of its edge */
+const reachCache={};
+function reach(t){
+  if(reachCache[t.id])return reachCache[t.id];
+  const home=roomOf[cellAt(t.x,t.y)],out=[],m=t.shape==='c'?t.r+0.6:Math.max(t.w,t.h)/2+0.6;
+  for(let j=Math.floor((t.y-m-MINY)/CELL);j<=Math.floor((t.y+m-MINY)/CELL);j++)for(let i=Math.floor((t.x-m-MINX)/CELL);i<=Math.floor((t.x+m-MINX)/CELL);i++){
+    if(i<0||j<0||i>=GW||j>=GH)continue;const c=j*GW+i;if(!ok(c)||roomOf[c]!==home)continue;const x=gx(i),y=gy(j);
+    const gap=t.shape==='c'?Math.hypot(x-t.x,y-t.y)-t.r:Math.max(Math.abs(x-t.x)-t.w/2,Math.abs(y-t.y)-t.h/2);
+    if(gap<=0.45)out.push(c);}
+  return reachCache[t.id]=out.length?out:[nearestOk(t.x,t.y)];
+}
+const near=new Uint8Array(N);
+for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const c=j*GW+i;if(!ok(c))continue;
+  for(let dj=-1;dj<=1&&!near[c];dj++)for(let di=-1;di<=1;di++){const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=GW||nj>=GH||!ok(nj*GW+ni)){near[c]=1;break;}}}
+const DIR4=[[0,-1],[1,0],[0,1],[-1,0]];
+function findPath(sources,targets){
+  const dist=new Float64Array(N*4).fill(Infinity),prev=new Int32Array(N*4).fill(-1),h=[];
+  const push=(d,c)=>{h.push([d,c]);let i=h.length-1;while(i>0){const p=(i-1)>>1;if(h[p][0]<=h[i][0])break;[h[p],h[i]]=[h[i],h[p]];i=p;}};
+  const pop=()=>{const top=h[0],l=h.pop();if(h.length){h[0]=l;let i=0;for(;;){const a=2*i+1,b=a+1;let m=i;if(a<h.length&&h[a][0]<h[m][0])m=a;if(b<h.length&&h[b][0]<h[m][0])m=b;if(m===i)break;[h[m],h[i]]=[h[i],h[m]];i=m;}}return top;};
+  for(const s of sources)for(let d=0;d<4;d++){dist[s*4+d]=0;push(0,s*4+d);}
+  let end=-1;
+  while(h.length){const[cost,st]=pop();if(cost>dist[st])continue;const c=st>>2,d=st&3;if(targets.has(c)){end=st;break;}
+    const i=c%GW,j=(c/GW)|0;
+    for(let nd=0;nd<4;nd++){const ni=i+DIR4[nd][0],nj=j+DIR4[nd][1];if(ni<0||nj<0||ni>=GW||nj>=GH)continue;const n=nj*GW+ni;
+      if(!canStep(c,n))continue;const nc=cost+1+(nd===d?0:1.5)+(near[n]?0.6:0),ns=n*4+nd;
+      if(nc<dist[ns]){dist[ns]=nc;prev[ns]=st;push(nc,ns);}}}
+  if(end<0)return null;
+  const out=[];for(let st=end;st!==-1;st=prev[st]){const c=st>>2;out.push([gx(c%GW),gy((c/GW)|0)]);}
+  return out.reverse();
+}
+/* keep only the corners */
+function corners(P){
+  if(P.length<3)return P;const out=[P[0]];
+  for(let k=1;k<P.length-1;k++){const a=P[k-1],b=P[k],c=P[k+1];if((b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0])!==0)out.push(b);}
+  out.push(P.at(-1));return out;
+}
+
+/* ---------- directions ---------- */
+const head=(a,b)=>(Math.atan2(b[0]-a[0],-(b[1]-a[1]))*180/Math.PI+360)%360;
+const turn=d=>{d=((d%360)+540)%360-180;return Math.abs(d)<=22?'straight':Math.abs(d)>=150?'around':d>0?'right':'left';};
+const metres=m=>{const v=Math.max(0.5,Math.round(m*2)/2);return`about ${v%1?v.toFixed(1):v} m`;};
+const roomAt=p=>roomOf[cellAt(p[0],p[1])];
+function side(p,h,tx,ty){
+  if(h==null)return'right next to you';
+  const r=h*Math.PI/180,ux=Math.sin(r),uy=-Math.cos(r),vx=tx-p[0],vy=ty-p[1];
+  const a=Math.atan2(ux*vy-uy*vx,ux*vx+uy*vy)*180/Math.PI;
+  return Math.abs(a)<35?'straight ahead':Math.abs(a)>145?'behind you':a>0?'on your right':'on your left';
+}
+/* things people steer by, mentioned when a leg walks right past them */
+const LANDMARKS=[{name:'the host desk',x:1.15,y:-0.4,r:1.35},{name:'the piano',x:-2.16,y:-3.0,r:1.4},{name:'the fireplace',x:-4.03,y:-4.35,r:0.9}];
+function segDist(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((p.x-a[0])*dx+(p.y-a[1])*dy)/L2));return Math.hypot(a[0]+dx*t-p.x,a[1]+dy*t-p.y);}
+const diff=(a,b)=>Math.abs((((a-b)%360)+540)%360-180);
+function legs(P){
+  const sg=[];for(let k=0;k<P.length-1;k++){const a=P[k],b=P[k+1];sg.push({h:head(a,b),L:Math.hypot(b[0]-a[0],b[1]-a[1]),a,b});}
+  const join=(k,m,h)=>({h,L:sg.slice(k,m+1).reduce((s,x)=>s+x.L,0),a:sg[k].a,b:sg[m].b});
+  for(let changed=true;changed;){changed=false;
+    for(let k=1;k<sg.length-1;k++)if(sg[k].L<1&&diff(sg[k+1].h,sg[k-1].h)<30){sg.splice(k-1,3,join(k-1,k+1,sg[k-1].h));changed=true;break;}
+    if(!changed&&sg.length>1&&sg[0].L<0.8){sg.splice(0,2,join(0,1,sg[1].h));changed=true;}
+    if(!changed&&sg.length>1&&sg.at(-1).L<0.8){const n=sg.length;sg.splice(n-2,2,join(n-2,n-1,sg[n-2].h));changed=true;}
+    if(!changed)for(let k=1;k<sg.length;k++)if(diff(sg[k].h,sg[k-1].h)<8){sg.splice(k-1,2,join(k-1,k,sg[k-1].h));changed=true;break;}
+  }
+  return sg;
+}
+function directions(P,startH,target){
+  const steps=[];let prevH=startH,total=0;const sg=legs(P);
+  for(let k=0;k<sg.length;k++){
+    const {a,b,h,L}=sg[k];total+=L;
+    const r0=roomAt(a),r1=roomAt(b),into=r1>=0&&r1!==r0&&ROOMS[r1].into?`, ${ROOMS[r1].into}`:'';
+    const lm=LANDMARKS.find(l=>segDist(l,a,b)<l.r&&Math.hypot(b[0]-l.x,b[1]-l.y)>l.r),past=lm?` past ${lm.name}`:'';
+    let t;
+    if(prevH==null)t=`Walk for ${metres(L)}${past}${into}`;
+    else{const w=turn(h-prevH);t=(w==='straight'?(k===0?'Walk straight ahead':'Keep going straight'):w==='around'?'Turn around and walk':`Turn ${w} and walk`)+` for ${metres(L)}${past}${into}`;}
+    steps.push(t+'.');prevH=h;
+  }
+  steps.push(target.table?`${target.name} is ${side(sg.length?sg.at(-1).b:P[0],prevH,target.x,target.y)}.`:target.arrive);
+  return{steps,total};
+}
+
+/* ---------- state ---------- */
+const S={mode:'guest',start:{kind:'entrance'},target:null,route:null,view:null};
+const tableById=id=>TABLES.find(t=>t.id===id);
+function startPoint(){
+  if(S.mode==='staff'){const v=$('from').value;return v==='bar'?{x:-5.6,y:-3.7,h:null,name:'the bar'}:{x:0,y:0.3,h:0,name:'the entrance'};}
+  if(S.start.kind==='table'){const t=tableById(S.start.id);return{x:t.x,y:t.y,h:null,name:t.id,table:t};}
+  return{x:0,y:0.3,h:0,name:'the entrance'};
+}
+function plan(target){
+  const st=startPoint(),src=st.table?reach(st.table):[nearestOk(st.x,st.y)],dst=target.table?reach(tableById(target.name)):[nearestOk(target.x,target.y)];
+  const tset=new Set(dst);
+  if(src.some(c=>tset.has(c))||(st.table&&target.table&&st.table.id===target.name)){S.route={pts:[],steps:['You’re already there.'],total:0,start:st,here:true};return;}
+  const raw=findPath(src,tset);
+  if(!raw){S.route={pts:[],steps:['No walkable route was found on the map for this one.'],total:0,start:st};return;}
+  const P=corners(raw),d=directions(P,st.h,target);
+  S.route={pts:P,steps:d.steps,total:d.total,start:st};
+}
+function go(target){S.target=target;plan(target);render();fitRoute();
+  if(window.matchMedia('(max-width:899px)').matches)document.querySelector('.mapcard').scrollIntoView({behavior:'smooth',block:'start'});}
+
+/* ---------- drawing ---------- */
+const X=x=>((x-MINX)*K).toFixed(1),Y=y=>((y-MINY)*K).toFixed(1),L=v=>(v*K).toFixed(1);
+const W=(MAXX-MINX)*K,H=(MAXY-MINY)*K;
+function ringShape(t){const g=0.28;return t.shape==='c'?`<circle class="ring" cx="${X(t.x)}" cy="${Y(t.y)}" r="${L(t.r+g)}"/>`:`<rect class="ring" x="${X(t.x-t.w/2-g)}" y="${Y(t.y-t.h/2-g)}" width="${L(t.w+2*g)}" height="${L(t.h+2*g)}" rx="6"/>`;}
+function shape(t,cls){return t.shape==='c'?`<circle class="${cls}" cx="${X(t.x)}" cy="${Y(t.y)}" r="${L(t.r)}"/>`
+  :`<rect class="${cls}" x="${X(t.x-t.w/2)}" y="${Y(t.y-t.h/2)}" width="${L(t.w)}" height="${L(t.h)}" rx="4"/>`;}
+function drawStatic(){
+  let s=`<rect class="padel" x="${X(-8.6)}" y="${Y(-25.35)}" width="${L(17.2)}" height="${L(1.35)}" rx="6"/><text class="slbl" x="${X(0)}" y="${Y(-24.5)}">Padel courts next door</text>`;
+  ROOMS.forEach(r=>{s+=`<rect class="room" x="${X(r.x0)}" y="${Y(r.y0)}" width="${L(r.x1-r.x0)}" height="${L(r.y1-r.y0)}" fill="url(#${r.floor})"/>`;
+    if(r.tint)s+=`<rect class="mamas" x="${X(r.x0)}" y="${Y(r.y0)}" width="${L(r.x1-r.x0)}" height="${L(r.y1-r.y0)}"/>`;});
+  DOORS.forEach(d=>{s+=`<rect x="${X(d.x0)}" y="${Y(d.y0)}" width="${L(d.x1-d.x0)}" height="${L(d.y1-d.y0)}" fill="url(#${d.floor})"/>`;});
+  s+=`<text class="slbl" x="${X(0)}" y="${Y(0.98)}">Front door</text>`;
+  FIX.forEach(f=>{s+=`<rect class="fix${f.kind?' fix-'+f.kind:''}" x="${X(f.x-f.w/2)}" y="${Y(f.y-f.h/2)}" width="${L(f.w)}" height="${L(f.h)}" rx="3"/>`;
+    if(f.kind==='brick')s+=`<text class="flbl" style="font-size:7px" transform="translate(${X(f.x)} ${Y(f.y)}) rotate(-90)">${esc(f.label)}</text>`;
+    else if(f.out)s+=`<text class="flbl-out" x="${X(f.x-0.35)}" y="${Y(f.y+f.h/2+0.55)}">${esc(f.label)}</text>`;
+    else s+=`<text class="flbl" x="${X(f.x)}" y="${Y(f.y)}">${f.w>1?esc(f.label):''}</text>`;});
+  TABLES.forEach(t=>{s+=shape(t,'tbl')+`<text class="tlbl" x="${X(t.x)}" y="${Y(t.y)}">${t.id}</text>`;});
+  ROOMS.forEach(r=>{if(r.label)s+=`<text class="rlbl" x="${X(r.lx)}" y="${Y(r.ly)}">${esc(r.label)}</text>`;});
+  $('static').innerHTML=s;
+}
+function render(){
+  let s='';const R=S.route,T=S.target;
+  if(R&&R.pts.length>1){const pts=R.pts.map(p=>`${X(p[0])},${Y(p[1])}`).join(' ');s+=`<polyline class="route-case" points="${pts}"/><polyline class="route" points="${pts}"/>`;}
+  if(T){
+    if(T.table){const t=tableById(T.name);s+=ringShape(t)+shape(t,'hit')+`<text class="tlbl hit-lbl" x="${X(t.x)}" y="${Y(t.y)}">${t.id}</text>`;}
+    else s+=`<circle class="ring" cx="${X(T.x)}" cy="${Y(T.y)}" r="9"/><circle class="pin" cx="${X(T.x)}" cy="${Y(T.y)}" r="7"/>`;
+  }
+  const st=startPoint();
+  if(st.table)s+=shape(st.table,'mine')+`<text class="tlbl mine-lbl" x="${X(st.table.x)}" y="${Y(st.table.y)}">${st.table.id}</text>`;
+  const p0=R&&R.pts.length?{x:R.pts[0][0],y:R.pts[0][1]}:st.table?null:st;
+  if(p0){s+=`<circle class="you" cx="${X(p0.x)}" cy="${Y(p0.y)}" r="7"/>`;
+    if(!R)s+=`<text class="you-lbl" x="${(+X(p0.x)-11).toFixed(1)}" y="${(+Y(p0.y)+4).toFixed(1)}" text-anchor="end">You’re here</text>`;}
+  $('dyn').innerHTML=s;
+  renderDirs();renderPressed();
+}
+function renderDirs(){
+  const R=S.route,T=S.target;
+  if(!R||!T){$('dirs').innerHTML=S.mode==='guest'
+    ?`<h2>Directions</h2><p class="empty">Choose a place above and the route appears on the map, with each turn written out here.</p>`
+    :`<h2>Directions</h2><p class="empty">Type a table number or tap one of the tables above.</p>`;return;}
+  const secs=Math.round(R.total/1.1),when=R.total<1?'':secs<45?`, under a minute on foot`:`, about ${Math.max(1,Math.round(secs/60))} min on foot`;
+  const title=T.table?`To ${T.name}`:T.title;
+  $('dirs').innerHTML=`<h2>${esc(title)}</h2><p class="sum">From ${esc(R.start.name)}${R.total?`, ${metres(R.total)}`:''}${when}</p><ol>${R.steps.map((t,i)=>`<li${i===R.steps.length-1?' class="last"':''}>${esc(t)}</li>`).join('')}</ol>`;
+}
+function renderPressed(){
+  document.querySelectorAll('.dest').forEach(b=>b.setAttribute('aria-pressed',String(!!S.target&&!S.target.table&&S.target.id===b.dataset.id)));
+  document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',String(!!S.target&&S.target.table&&S.target.name===b.dataset.id)));
+}
+
+/* ---------- zooming the map to the route ---------- */
+let anim=0;
+function setView(v,instant){
+  const svg=$('map'),from=S.view||v;S.view=v;cancelAnimationFrame(anim);
+  if(instant||window.matchMedia('(prefers-reduced-motion: reduce)').matches){svg.setAttribute('viewBox',v.join(' '));return;}
+  const t0=performance.now();
+  const step=t=>{const k=Math.min(1,(t-t0)/380),e=1-Math.pow(1-k,3);svg.setAttribute('viewBox',from.map((a,i)=>(a+(v[i]-a)*e).toFixed(1)).join(' '));if(k<1)anim=requestAnimationFrame(step);};
+  anim=requestAnimationFrame(step);
+}
+function fitAll(instant){setView([0,0,W,H],instant);$('mapnote').textContent='The whole restaurant';}
+function fitRoute(){
+  const R=S.route;if(!R||!R.pts.length){fitAll();return;}
+  const xs=R.pts.map(p=>p[0]).concat(S.target?[S.target.x]:[]),ys=R.pts.map(p=>p[1]).concat(S.target?[S.target.y]:[]);
+  let x0=Math.min(...xs)-2.2,x1=Math.max(...xs)+2.2,y0=Math.min(...ys)-2.2,y1=Math.max(...ys)+2.2;
+  if(x1-x0<9){const m=(x0+x1)/2;x0=m-4.5;x1=m+4.5;}
+  if(y1-y0<9){const m=(y0+y1)/2;y0=m-4.5;y1=m+4.5;}
+  const box=$('map').getBoundingClientRect(),ar=box.width&&box.height?box.width/box.height:0.8;
+  let w=x1-x0,h=y1-y0;if(w/h<ar){const nw=h*ar;x0-=(nw-w)/2;w=nw;}else{const nh=w/ar;y0-=(nh-h)/2;h=nh;}
+  if(w>=MAXX-MINX&&h>=MAXY-MINY){fitAll();return;}
+  x0=Math.min(Math.max(x0,MINX),Math.max(MINX,MAXX-w));y0=Math.min(Math.max(y0,MINY),Math.max(MINY,MAXY-h));
+  setView([(x0-MINX)*K,(y0-MINY)*K,w*K,h*K]);$('mapnote').textContent='Zoomed to your route';
+}
+
+/* ---------- controls ---------- */
+function fillControls(){
+  $('dests').innerHTML=DESTS.map(d=>`<button type="button" class="dest" data-id="${d.id}" aria-pressed="false">${esc(d.name)}<small>${esc(d.hint)}</small></button>`).join('');
+  const groups=['piano','veranda','court'].map(a=>({a,list:TABLES.filter(t=>t.area===a)}));
+  $('where').innerHTML=`<option value="entrance">The entrance</option>`+groups.map(g=>`<optgroup label="${esc(AREA_NAME[g.a])}">${g.list.map(t=>`<option value="${t.id}">Table ${t.id}</option>`).join('')}</optgroup>`).join('');
+  $('areas').innerHTML=groups.map(g=>`<div><h3>${esc(AREA_NAME[g.a])}</h3><div class="chips">${g.list.map(t=>`<button type="button" class="chip" data-id="${t.id}" aria-pressed="false">${t.id}</button>`).join('')}</div></div>`).join('');
+}
+const tableTarget=t=>({table:true,name:t.id,x:t.x,y:t.y});
+$('dests').addEventListener('click',e=>{const b=e.target.closest('.dest');if(!b)return;go(DESTS.find(d=>d.id===b.dataset.id));});
+$('areas').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;$('terr').textContent='';go(tableTarget(tableById(b.dataset.id)));});
+$('where').addEventListener('change',e=>{const v=e.target.value;S.start=v==='entrance'?{kind:'entrance'}:{kind:'table',id:v};
+  if(S.target){plan(S.target);render();fitRoute();}else{render();}});
+$('from').addEventListener('change',()=>{if(S.target){plan(S.target);render();fitRoute();}else render();});
+$('tnum').addEventListener('input',()=>{$('terr').textContent='';});
+$('tform').addEventListener('submit',e=>{
+  e.preventDefault();const raw=$('tnum').value.trim().replace(/^t/i,'');
+  if(!raw){$('terr').textContent='Type a table number first.';return;}
+  const t=tableById('T'+Number(raw));
+  if(!/^\d+$/.test(raw)||!t){$('terr').textContent=`There’s no table ${raw} on the plan. Tables run from T1 to T101.`;return;}
+  $('terr').textContent='';go(tableTarget(t));
+});
+document.querySelector('.modes').addEventListener('click',e=>{const b=e.target.closest('button[data-mode]');if(!b)return;
+  S.mode=b.dataset.mode;document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  $('guest-pane').hidden=S.mode!=='guest';$('staff-pane').hidden=S.mode!=='staff';
+  S.target=null;S.route=null;render();fitAll();});
+$('fit').addEventListener('click',()=>fitAll());
+
+/* a table's QR code opens this page as …#t42, so the guest starts at their own table */
+function fromHash(){
+  let id='';try{id=decodeURIComponent(location.hash.slice(1)).toLowerCase();}catch(e){}
+  const m=id.match(/^t(\d+)$/),t=m&&tableById('T'+Number(m[1]));
+  if(t){S.start={kind:'table',id:t.id};$('where').value=t.id;}
+  else if(id==='entrance'){S.start={kind:'entrance'};$('where').value='entrance';}
+  else return;
+  if(S.mode!=='guest')document.querySelector('.modes button[data-mode="guest"]').click();
+  if(S.target){plan(S.target);render();fitRoute();}else render();
+}
+
+fillControls();drawStatic();fitAll(true);render();fromHash();
+window.addEventListener('hashchange',fromHash);
+})();
+</script>
+</body>
+</html>
